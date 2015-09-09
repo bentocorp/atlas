@@ -1,0 +1,107 @@
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Atlas</title>
+        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+        <script src="https://api.mapbox.com/mapbox.js/v2.2.1/mapbox.js"></script>
+        <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-label/v0.2.1/leaflet.label.js"></script>
+        <script src="ext/socket.io-client.js"></script>
+        <script src="js/atlas.js"></script>
+        <script src="js/order.js"></script>
+        <script src="js/mapbox.js"></script>
+        <link href="https://api.mapbox.com/mapbox.js/v2.2.1/mapbox.css" rel="stylesheet"/>
+        <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-label/v0.2.1/leaflet.label.css" rel='stylesheet'/>
+        <link href="css/atlas.css" rel="stylesheet"/>
+    </head>
+    
+    <body>
+    
+        <div style="display: table; width: 100%; height: 100%; font: 7pt Arial;">
+            
+            <div style="display: table-row; height: 0px; background-color: #6eb825;">
+                <div id="header" style="height: 100%; border-bottom: 2px solid #beb8b2; padding: 7px;">
+                    <img src="img/bento-logo-white.svg" width="15%"/>
+                </div>
+            </div>
+        
+            <!-- center row -->
+            <div style="display: table-row;">
+                
+                <div style="display: table; width: 100%; height: 100%;">
+                    
+                    <!-- map and console -->
+                    <div style="display: table-cell;">
+                        <div style="display: table; height: 100%; width: 100%;">
+                            <div style="display: table-row;">
+                                <!-- Some content needed in this div for proper positioning (not sure why) -->
+                                <div id="map" style="display: table-cell;">&nbsp;</div>
+                            </div>
+                            <div style="display: table-row; height: 0px;">
+                                <textarea readonly id="console" style="height: 107px; width: 100%;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- side-pane -->
+                    <div id="side-pane" style="display: table-cell; width: 190px;">
+                        New Orders
+                        <div id="unassigned">
+                            <div id="no_driver" class="driver-container"></div>
+                        </div>
+                        <br/>
+                        Connected
+                        <div id="online-drivers">
+                            <!-- Here's an example of what will go in this container
+                            <div id="driver_marc890" class="driver-container">
+                                <div class="driver-header">
+                                    <span class="folding-symbol collapsed"></span>
+                                    <span class="status-symbol online"></span>
+                                    <span class="driver-name">Marc Doan</span>
+                                </div>
+                                <div class="orders">
+                                    <div id="order_501" class="order" position="0" draggable="true">(4) 2017 Mission St</div>
+                                    <div id="order_502" class="order" position="1" draggable="true">(1) 427 Stockton St</div>
+                                    <div class="order dummy" position="2"></div>
+                                </div>
+                            </div>-->
+                        </div>
+                        <br/>
+                        Offline
+                        <div id="offline-drivers"></div>
+                    </div>
+            
+                </div> <!-- table -->
+            </div> <!-- center row -->
+
+        <div style="display: table-row; height: 0px;">
+            <div id="footer" style="border-top: 2px solid #beb8b2; background-color: #6eb825; padding: 4px; font: 7pt Arial; color: white; text-align: center">
+                Copyright &copy; Bento Technology, Inc. 2015
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">
+        /* Write to console */
+        function println(msg) {
+            var console = $('#console');
+            console.append(msg + '\n');
+            console.scrollTop(console.height());
+        }
+
+        var map = L.mapbox.map('map', 'mapbox.streets');
+        var address = encodeURI('2017 Mission St, San Francisco, 94110, California, United States');
+        $.ajax({
+            url: "https://api.mapbox.com/v4/geocode/mapbox.places/"+address+".json?access_token="+L.mapbox.accessToken,
+        }).done(function (res) {
+            var center = res.features[0].center;
+            map.setView([center[1], center[0]], 16);
+        });
+      
+      
+      
+      init();
+    </script>
+  </body>
+</html>
