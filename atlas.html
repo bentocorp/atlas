@@ -21,7 +21,7 @@
             
             <div style="display: table-row; height: 0px; background-color: #6eb825;">
                 <div id="header" style="height: 100%; border-bottom: 2px solid #beb8b2; padding: 7px;">
-                    <img src="img/bento-logo-white.svg" width="15%"/>
+                    <img src="img/bento-logo-white.svg" width="15%" onclick="greet();"/>
                 </div>
             </div>
         
@@ -98,8 +98,6 @@
             var center = res.features[0].center;
             map.setView([center[1], center[0]], 16);
         });
-      
-      
       
       init();
     </script>

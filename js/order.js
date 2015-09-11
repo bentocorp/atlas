@@ -16,7 +16,7 @@ var Order = new (function () {
 		if (driver['order'] != driver['after']) {
 			if ($('#' + driver.order + '> .orders').children().length <= 1) {
 				foldingSymbol = $('#' + driver.order + '> .driver-header > .folding-symbol');
-				console.log(foldingSymbol);
+				
 				foldingSymbol.removeClass('expanded').addClass('collapsed').addClass('transparent');
 			}
 			fix_positions($('#' + driver['after'] + '> .orders'));
@@ -44,7 +44,7 @@ var Order = new (function () {
 	        o.attr('onmouseleave', 'recolor($(this));');
 			o.attr({
 				id: 'order_' + order.id, draggable: true, position: order.position,
-			}).html(order.body);
+			}).html(order.address.street);
 			// If an order is assigned, it can also function as a drop container
 			if (order.state != 'unassigned') {
 				atlas.event_handlers.dragdrop.order.add_drop_listeners(o);
@@ -56,9 +56,12 @@ var Order = new (function () {
 	this.assign = function (orderId, driverId) {
 		console.log('assigning ' + orderId + ' to ' + driverId);
 		$.getJSON(houston_url + '/api/assign', {
-			'order_id': orderId,
-			'client_id': driverId,
-		}).done(function (res) { });
+			'orderId': orderId,
+			'driverId': driverId,
+		}).done(function (res) { })
+		.fail(function (jqxhr, textStatus, error) {
+			console.log(error);
+		}); 
 	}
 
 

@@ -5,10 +5,10 @@ var markers = { };
 
 function get_order_color(state) {
 	switch (state) {
-		case 'highlight': return '#ffff00'; // yellow
+		case 'highlight': return '#FFC107'; // yellow
 		case 'accepted' : return '#0066cc'; // blue
 		case 'rejected' : return '#cc0000'; // red
-		case 'completed': return '#339900'; // green
+		case 'complete' : return '#339900'; // green
 		default:
 			return '#666666'; // grey (unassigned)
 	}
@@ -32,9 +32,12 @@ function recolor(order) {
 		L.mapbox.marker.icon({
         	'marker-symbol': 'circle',
             'marker-size': 'medium',
-            'marker-color': get_order_color(o.state),
+            'marker-color': get_order_color(o.status),
         })
 	);
+    if (o.status == 'accepted' || o.status == 'rejected' || o.status == 'complete') {
+        order.css('font-weight', 'bold').css('color', get_order_color(o.status));
+    }
 }
 
 function toLatLng(address, callback) {
