@@ -1,15 +1,34 @@
 body { margin: 0; padding: 0; }
 .driver-container { border-top: 1px solid #b6dc92; }
-.driver-header { padding-top: 3px; padding-bottom: 3px; }
-.driver-name { display: inline-block; vertical-align: middle; font-weight: bold; }
-.order  { padding-left: 10px; padding-top: 3px; padding-bottom: 3px; border-top: 2px solid transparent; }
-.dummy { padding-bottom: 0; padding-top: 0; }
+.driver-header { padding-top: 4px; padding-bottom: 1px; }
 .folding-symbol { display: inline-block; vertical-align: middle; width: 0; height: 0; }
 .collapsed { border-top: 3px solid transparent; border-left: 6px solid #9e7d96; border-bottom: 3px solid transparent; }
 .expanded { border-top: 6px solid #9e7d96; border-left: 3px solid transparent; border-right: 3px solid transparent; }
-.status-symbol { display: inline-block; vertical-align: middle; width: 7px; height: 7px; border-radius: 50%; border: 2px solid; margin-left:3px; margin-right: 3px;}
-.online { background-color: #58931E; border-color: #7CBF3B; }
+.status-symbol { display: inline-block; vertical-align: middle; width: 8px; height: 8px; border-radius: 50%; border: 2px solid; margin-left: 3px; margin-right: 3px; }
+.online { background-color: #58931e; border-color: #7cbf3b; }
 .offline { border-color: #999999; background-color: #666666; }
+.driver-name { display: inline-block; vertical-align: middle; font-weight: bold; }
+.gear-icon { display: inline-block; vertical-align: middle; width: 10px; height: 10px; }
+.orders { padding-left: 6px; }
+.order-status-header { margin-left: 3px; margin-bottom: 1px; margin-top: 3px; font: 6pt Arial; color: #91b074; }
+.order  { display: table; width: 100%; padding-top: 1px; padding-bottom: 1px; border-top: 2px solid transparent; padding-left: 3px; }
+.order-status-symbol { display: table-cell; vertical-align: middle; width: 10px; height: 10px; border: 1px solid transparent; text-align: center; font: 7pt Arial; font-weight: bold; margin-left: 3px; margin-right: 3px; }
+.unassigned { color: #666666; border: 1px solid #666666; background-color: #bbbbbb; }
+.accepted { color: #2e7dc4; border: 1px solid #2e7dc4; background-color: #74c3ff; }
+.complete { color: #2C820E; border: 1px solid #2C820E; background-color: #90E672; }
+.pending { visibility: hidden; }
+.modified { color: #c3bf2b; border: 1px solid #c3bf2b; background-color: #fffb67; }
+.rejected { color: #ab3835; border: 1px solid #ab3835; background-color: #e77471; }
+.order-address { display: table-cell; vertical-align: middle; overflow: hidden; width: 90px; white-space: nowrap; padding-left: 3px; }
+.order-name { display: table-cell; vertical-align: middle; overflow: hidden; width: 90px; white-space: nowrap; }
+.dummy { padding-bottom: 0; padding-top: 0; }
+.drag-enter { border-top: 2px solid rgba(255, 255, 204, 0.5) }
+
+
+.hide { float: right; cursor: pointer; font: 6pt Arial; color: #91b074; }
+
+
+
 .transparent { border-color: transparent; }
 
 #map { background-color: #CCCCCC; }
@@ -29,3 +48,8 @@ textarea {
 #side-pane {
 	background-color:#c5e3a8; border-left: 2px solid #beb8b2; font: 7pt Arial; color: #444444; padding-left: 5px; padding-right: 5px; overflow-y: auto;
 }
+
+.hidden { visibility: hidden; }
+
+
+

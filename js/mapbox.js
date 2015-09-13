@@ -3,14 +3,17 @@ L.mapbox.accessToken = "pk.eyJ1IjoiYmVudG9ub3ciLCJhIjoiNjI2ZmIwM2JkNzliMDZjYWEwY
 
 var markers = { };
 
-function get_order_color(state) {
-	switch (state) {
-		case 'highlight': return '#FFC107'; // yellow
-		case 'accepted' : return '#0066cc'; // blue
-		case 'rejected' : return '#cc0000'; // red
-		case 'complete' : return '#339900'; // green
+// Make sure same with atlas.css
+function get_order_color(status) {
+	switch (status.toLowerCase()) {
+        case 'pending':
+        case 'unassigned': return '#bbbbbb';
+        case 'modified'  : return '#fffb67';
+		case 'accepted'  : return '#0066cc'; // blue
+		case 'rejected'  : return '#cc0000'; // red
+		case 'complete'  : return '#339900'; // green
 		default:
-			return '#666666'; // grey (unassigned)
+			throw 'Trying to color based on unsupported status ' + status;
 	}
 }
 
@@ -41,14 +44,14 @@ function recolor(order) {
 }
 
 function toLatLng(address, callback) {
-            // Mapbox format - 2017 Mission St, San Francisco, 94110, California, United States
-            var query = encodeURI(address.street + ', ' + address.city + ', ' + address.zipCode + ', ' + address.region + ', ' + address.country);
-            $.getJSON('https://api.mapbox.com/v4/geocode/mapbox.places/' + query + '.json?access_token=' + L.mapbox.accessToken, { }, function (res) {
-                // Check relevance score too (>0.98)
-                if (typeof res.features != 'undefined' && res.features.length > 0) {
-                    callback(res.features[0]);
-                } else {
-                    console.log('Error - ' + res);
-                }
-            });
+    // Mapbox format - 2017 Mission St, San Francisco, 94110, California, United States
+    var query = encodeURI(address.street + ', ' + address.city + ', ' + address.zipCode + ', ' + address.region + ', ' + address.country);
+    $.getJSON('https://api.mapbox.com/v4/geocode/mapbox.places/' + query + '.json?access_token=' + L.mapbox.accessToken, { }, function (res) {
+        // Check relevance score too (>0.98)
+        if (typeof res.features != 'undefined' && res.features.length > 0) {
+            callback(res.features[0]);
+        } else {
+            console.log('Error - ' + res);
         }
+    });
+}

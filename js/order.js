@@ -3,8 +3,8 @@ var Order = new (function () {
 	/**
 	 * @param order - The order to be inserted (behind after)
 	 */
-	this.insert = function (order, after) {
-
+	this.insert = function (orderId, driverId, afterId) {
+		// order_insert
 		var driver = {
 			'order': order.parent().parent().attr('id'),
 			'after': after.parent().parent().attr('id'),
