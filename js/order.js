@@ -1,68 +1,84 @@
 /* Singleton */
 var Order = new (function () {
-	/**
-	 * @param order - The order to be inserted (behind after)
-	 */
-	this.insert = function (orderId, driverId, afterId) {
-		// order_insert
-		var driver = {
-			'order': order.parent().parent().attr('id'),
-			'after': after.parent().parent().attr('id'),
-		};
-		var foldingSymbol = $('#' + driver.after + '> .driver-header > .folding-symbol');
-		order.insertBefore(after);
-		foldingSymbol.removeClass('transparent').removeClass('collapsed').addClass('expanded');
-		fix_positions($('#' + driver['order'] + '> .orders'));
-		if (driver['order'] != driver['after']) {
-			if ($('#' + driver.order + '> .orders').children().length <= 1) {
-				foldingSymbol = $('#' + driver.order + '> .driver-header > .folding-symbol');
-				
-				foldingSymbol.removeClass('expanded').addClass('collapsed').addClass('transparent');
+
+	this.move = function (orderId, driverId, afterId) {
+		orderId = parseInt(orderId); driverId = parseInt(driverId); afterId = parseInt(afterId);
+		var order = g.orders[orderId];
+		if (order == null) {
+			throw 'Error - order ' + orderId + ' does not exist';
+		}
+		var o = $('#order_' + orderId);
+		if (o.length <= 0) {
+			throw 'Error - order ' + orderId + "can't be found";
+		}
+		var cd, cq, cp = -1; // current driver, current order queue, current priority
+		if (order.driverId != null && order.driverId > 0) {
+			cd = g.drivers[order.driverId]; // current driver
+			if (cd == null) {
+				throw 'Error - corrupt data? Order ' + orderId + ' currently assigned to driver ' + order.driverId + ' but driver does not exist';
 			}
-			fix_positions($('#' + driver['after'] + '> .orders'));
+			cq = cd.orderQueue;
+			cp = cq.indexOf(orderId);
+			if (cp < 0) {
+				throw 'Error - corrupt data? Order ' + orderId + ' currently assigned to driver ' + order.driverId + ' but not in queue';
+			}
+		}
+		if (driverId == null || driverId < 0) {
+			// {{ important that execution doesn't fail in here
+			order.driverId = -1;
+			if (cp >= 0) {
+				cq.splice(cp, 1);
+			}
+			// remove?
+			$('#0_orders-pending').append(o);
+			o.attr('ondragover', '').attr('ondragenter', '').attr('ondragleave', '').attr('ondrop', '');
+			// XXXX <<<<<<< place this logic in the push notification handler!
+			order.status="UNASSIGNED";
+			refresh_status_symbol(order);
+			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').hide();
+			// XXXXX >>>>>>>>>>>>
+			//if ($('#' + cd.id + '_orders-pending').children().length < 2) {
+			//	$('#driver_' + cd.id + ' > .driver-header > .folding-symbol').removeClass('expanded').addClass('collapsed').addClass('transparent');
+			//}
+			// }}
+		} else {
+			var driver = g.drivers[driverId];
+			if (driver == null) {
+				throw 'Error - driver ' + driverId + ' does not exist';
+			}
+			var after = null,
+				nq = driver.orderQueue,
+			    np = -1;
+			if (afterId == null || afterId < 0) {
+				// insert at end
+				after = $('#' + driverId + '_orders-pending').children(':last');
+				np = nq.length;
+			} else {
+				after = $('#order_' + afterId);
+				if (after.length <= 0) {
+					throw 'Error - after order ' + afterId + ' not found';
+				}
+				np = nq.indexOf(afterId);
+				if (np < 0) {
+					throw 'Error - corrupt data? Order ' + afterId + ' does not exist in queue of driver ' + driverId;
+				}
+			}
+			// {{ important that nothing fails in here
+			order.driverId = driverId;
+			if (cp >= 0) {
+				cq.splice(cp, 1);
+			}
+			nq.splice(np, 0, orderId);
+			o.insertBefore(after);
+			// enable drop
+			o.attr('ondragover' , 'Events.dragover(event);')
+		     .attr('ondragenter', 'Events.order_dragenter(event, "order");')
+		     .attr('ondragleave', 'Events.order_dragleave(event, "order");')
+		     .attr('ondrop'     , 'Events.order_ondrop(event);');
+			$('#driver_' + driverId + ' > .driver-header > .folding-symbol').removeClass('collapsed').addClass('expanded').removeClass('transparent');
+			$('#' + driverId + '_orders').show();
+			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').show();
+			// }}
 		}
 	};
-
-	// Insert order at the end
-	this.push = function (o, driverId) {
-		var after = $('#'+driverId+"> .orders").children(':last-child');
-		atlas.event_handlers.dragdrop.order.add_drop_listeners(o);
-		Order.insert(o, after);
-	}
-
-	// <div id="order_500" class="order" position="0" draggable="true"></div>
-	this.create_order = function (order) {
-		var o = $('<div>').attr({
-			'class': 'order', 'ondragstart': 'atlas.event_handlers.dragdrop.ondragstart(event);',
-			//'ondragover': 'atlas.event_handlers.dragdrop.ondragover(event);'
-		});
-		if (typeof order === 'undefined') { // For dummy orders
-			o.addClass('dummy');
-			atlas.event_handlers.dragdrop.order.add_drop_listeners(o);
-		} else {
-			o.attr('onmouseenter', 'highlight($(this));');
-	        o.attr('onmouseleave', 'recolor($(this));');
-			o.attr({
-				id: 'order_' + order.id, draggable: true, position: order.position,
-			}).html(order.address.street);
-			// If an order is assigned, it can also function as a drop container
-			if (order.state != 'unassigned') {
-				atlas.event_handlers.dragdrop.order.add_drop_listeners(o);
-			}
-		}
-		return o;
-	}
-
-	this.assign = function (orderId, driverId) {
-		console.log('assigning ' + orderId + ' to ' + driverId);
-		$.getJSON(houston_url + '/api/assign', {
-			'orderId': orderId,
-			'driverId': driverId,
-		}).done(function (res) { })
-		.fail(function (jqxhr, textStatus, error) {
-			console.log(error);
-		}); 
-	}
-
-
 })();

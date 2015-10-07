@@ -1,4 +1,7 @@
 body { margin: 0; padding: 0; }
+#side-pane {
+     background-color: #c5e3a8; border-left: 2px solid #beb8b2; font: 7pt Arial; color: #444444; padding-left: 5px; padding-right: 5px; overflow-y: auto;
+}
 .driver-container { border-top: 1px solid #b6dc92; }
 .driver-header { padding-top: 4px; padding-bottom: 1px; }
 .folding-symbol { display: inline-block; vertical-align: middle; width: 0; height: 0; }
@@ -8,30 +11,35 @@ body { margin: 0; padding: 0; }
 .online { background-color: #58931e; border-color: #7cbf3b; }
 .offline { border-color: #999999; background-color: #666666; }
 .driver-name { display: inline-block; vertical-align: middle; font-weight: bold; }
-.gear-icon { display: inline-block; vertical-align: middle; width: 10px; height: 10px; }
+.gear-icon { display: inline-block; vertical-align: middle; width: 10px; height: 10px; cursor: default; }
 .orders { padding-left: 6px; }
 .order-status-header { margin-left: 3px; margin-bottom: 1px; margin-top: 3px; font: 6pt Arial; color: #91b074; }
-.order  { display: table; width: 100%; padding-top: 1px; padding-bottom: 1px; border-top: 2px solid transparent; padding-left: 3px; }
-.order-status-symbol { display: table-cell; vertical-align: middle; width: 10px; height: 10px; border: 1px solid transparent; text-align: center; font: 7pt Arial; font-weight: bold; margin-left: 3px; margin-right: 3px; }
-.unassigned { color: #666666; border: 1px solid #666666; background-color: #bbbbbb; }
+.order  { padding-top: 1px; padding-bottom: 1px; border-top: 2px solid transparent; }
+.order-status-symbol { display: inline-block; vertical-align: middle; width: 10px; height: 10px; border: 1px solid transparent; text-align: center; font: 7pt Arial; font-weight: bold; margin-left: 3px; margin-right: 3px; }
+.pending, .unassigned { color: #666666; border: 1px solid #666666; background-color: #bbbbbb; }
 .accepted { color: #2e7dc4; border: 1px solid #2e7dc4; background-color: #74c3ff; }
-.complete { color: #2C820E; border: 1px solid #2C820E; background-color: #90E672; }
-.pending { visibility: hidden; }
+.complete { color: #2c820e; border: 1px solid #2c820e; background-color: #90e672; }
+/*.pending { visibility: hidden; }*/
 .modified { color: #c3bf2b; border: 1px solid #c3bf2b; background-color: #fffb67; }
 .rejected { color: #ab3835; border: 1px solid #ab3835; background-color: #e77471; }
-.order-address { display: table-cell; vertical-align: middle; overflow: hidden; width: 90px; white-space: nowrap; padding-left: 3px; }
-.order-name { display: table-cell; vertical-align: middle; overflow: hidden; width: 90px; white-space: nowrap; }
-.dummy { padding-bottom: 0; padding-top: 0; }
-.drag-enter { border-top: 2px solid rgba(255, 255, 204, 0.5) }
-
-
+.order-address { display: inline-block; vertical-align: middle; overflow: hidden; width: 81px; white-space: nowrap; margin-right: 9px; }
+.order-name { display: inline-block; vertical-align: middle; overflow: hidden; width: 90px; white-space: nowrap; }
+.order-dummy { border-top: 2px solid transparent; padding-bottom: 0; padding-top: 0; }
+.order-drag-enter { border-top: 2px solid rgba(255, 255, 204, 0.5) }
+.driver-header-drag-enter { background-color: rgba(255, 255, 204, 0.5); }
+.actions { float: right; margin-top: 1px; position: relative; }
+.actions-menu { position: absolute; right: 0; border: 1px solid #555555; border-radius: 2px; background-color: #ffffff; padding: 3px; padding-bottom: 0; width: 100px; cursor: default; }
+.menu-group { font: 6pt Arial; color: #bbbbbb; }
+.menu-item { padding-top: 4px; padding-bottom: 4px; border-top: 1px solid #eeeeee; cursor: default; }
+.menu-select { background-color: #eeeeee; }
 .hide { float: right; cursor: pointer; font: 6pt Arial; color: #91b074; }
+.gone { display: none; }
 
-
+.cursor-wait { cursor: wait; }
 
 .transparent { border-color: transparent; }
 
-#map { background-color: #CCCCCC; }
+#map { background-color: #cccccc; }
 textarea {
 	border: none;
 	border-top: 2px solid #beb8b2;
@@ -43,13 +51,57 @@ textarea {
      background-color: white; 
      overflow-y: auto;
 }
+#console { font: 7pt Arial; }
 #console:focus { outline-width: 0; }
 
-#side-pane {
-	background-color:#c5e3a8; border-left: 2px solid #beb8b2; font: 7pt Arial; color: #444444; padding-left: 5px; padding-right: 5px; overflow-y: auto;
-}
+input:focus { outline-width: 0; }
+textarea:focus { outline-width: 0; }
 
+.login-label { display: inline-block; vertical-align: middle; font: 7pt Arial; font-weight: normal; color: white; margin-right: 1px; }
+.login-field { display: inline-block; vertical-align: middle; font: 7pt Arial; border: 2px solid #beb8b2; border-radius: 3px; margin-right: 0px; width: 60px; }
+.login-button { vertical-align: middle; font: 7pt Arial; background-color: #dddddd; border: 2px solid #aaaaaa; border-radius: 5px; height: 18px; }
+.login-button:focus { outline-width: 0; }
 .hidden { visibility: hidden; }
 
+#pop-up {
+     text-align: left; background-color: #dfefcf; width: 300px; height: 425px; border-radius: 5px; border: 2px solid #afafaf;
+}
 
+select:not([multiple]) {
+     -webkit-appearance: none;
+     -moz-appearance: none;
+}
 
+.p-textfield {
+     background-color: #dfefcf; border: none; border-bottom: 1px solid #558e1c; margin-bottom: 2px; color: #3c6314; font-family: .HelveticaNeueDeskInterface-Regular; font-size: 11px;
+     height: 20px; width: 100%;
+}
+#p-submit {
+     position: absolute; right: 0; bottom: 0; margin: 6px; border-radius: 0px; -webkit-appearance: none; border: none; color: white; background-color: #558e1c;
+}
+
+.mapbox-suggestion {
+     padding-top: 3px; padding-left: 0px; padding-bottom: 2px; padding-left: 1px;
+}
+.mapbox-suggestion-hover {
+     background-color: #eeeeee;
+}
+#p-order-body {
+     height: 150px; margin-top: 10px; border: 1px solid #558e1c; color: #3c6314; font-family: .HelveticaNeueDeskInterface-Regular; background-color: #ffffff
+}
+#p-city {
+     border-radius: 0px; height: 20px; border: none; width: 100%; border-bottom: 1px solid #558e1c; background-color: #dfefcf; font-family: .HelveticaNeueDeskInterface-Regular;
+     color: #3c6314;
+}
+#p-city:not([multiple]) {
+     outline-width: 0px;
+}
+#p-drivers {
+     border-radius: 0px; height: 20px; border: 1px solid #558e1c; width: 100%; height: 80px; margin-top: 2px; color: #558e1c; font-size: 11px;
+     font-family: .HelveticaNeueDeskInterface-Regular;
+}
+#p-drivers:focus { outline-width: 0; }
+#mapbox-suggestions {
+     position: absolute; background-color: white; font-size: 7pt; font-family: .HelveticaNeueDeskInterface-Regular; right: 2px; left: 0px; color: #558e1c; border: 1px solid #558e1c;
+     cursor: default;
+}

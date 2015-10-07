@@ -18,17 +18,57 @@
     
     <body>
 
-        <!-- 
-        <table style="position: absolute; width: 100%; height: 100%; font: 7pt Arial; background-color: rgba(0,0,0,0); z-index:9999">
+         
+        <table id="foo" style="position: absolute; width: 100%; height: 100%; font: 7pt Arial; background-color: rgba(0,0,0,0); z-index: 9999; display: none;">
             <tr><td valign="middle" align="center">
-                <div style="text-align: left; background-color:white;display:inline-block;width: 200px; height:400px;border-radius:5px;border:2px solid blue">
-                    <div>New order Entry form <span style="float:right;">x</span></div>
-                    Name:<input type="text"/>
-                    Address:<input type="text"/>
-                    Body:<input type="text"/>
+                <div id="pop-up" style="position: relative;">
+                    <div id="p-header" style="display: table; height: 18px; background-color: #558e1c; border: 0px solid #558e1c; width: 100%; border-top-left-radius: 3px; border-top-right-radius:3px;">
+                        <span id="p-title" style="display: table-cell; vertical-align: middle; color: white; font-weight: bold; font: 9pt Arial; padding: 3px;">New Order</span>
+                        <span style="float: right; font: 11pt Arial; color: white; margin-top: 2px; margin-right: 3px; cursor: default;" onclick="$('#foo').hide();">&#x2715;</span>
+                    </div>
+                    <div id="p-body" style="padding: 6px;">
+                        <div id="p-feedback-msg" style="color: #a00000;"></div>
+                        <input id="p-name" type="text" style="width: 100%;" class="p-textfield"/>
+                        <span style="margin-left: 0px;">Name</span>
+                        <div style="display: table; width: 100%; border-spacing: 0px;">    
+                            <div style="display: table-cell; position: relative;">
+                                <input id="p-street" type="text" style="width: 100%;" class="p-textfield"/>
+                                <div id="mapbox-suggestions" style="display: none;" onmouseleave="//$(this).hide();">
+                                </div>
+                            </div>
+                            <div style="display: table-cell; width: 80px;">
+                                <select id="p-city">
+                                    <option>San Francisco</option>
+                                    <option>Los Angeles</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display: table; width: 100%; border-spacing: 0px;">
+                            <span style="display: table-cell;">Street</span><span style="display: table-cell; width: 80px">City</span>
+                        </div>
+                        <div style="width: 100%; display: table; border-spacing: 0px; margin-top: 5px;">
+                            <div style="display: table-cell;"><input id="p-state" disabled class="p-textfield" type="text" value="California"/></div>
+                            <div style="display: table-cell; width: 80px;"><input id="p-zip-code" disabled class="p-textfield" type="text" value=""/></div>
+                            <div style="display: table-cell; width: 80px;"><input id="p-country" disabled class="p-textfield" type="text" value="United States"/></div>
+                        </div>
+                        <div style="display: table; border-spacing: 0px; width: 100%;">
+                            <span style="display: table-cell;">State</span><span style="display: table-cell; width: 80px;">Zip Code</span><span style="display: table-cell; width: 80px;">Country</span>
+                        </div>
+                        <input id="p-lat" type="hidden"/><input id="p-lng" type="hidden"/>
+                        <textarea id="p-order-body"></textarea>
+                        <div style="display: inline-block; font: 7pt Arial; margin-top: 10px;">
+                            Order Assignments
+                            <select id="p-drivers" multiple>
+                                <option>Rose Winslet</option>
+                                <option>Rowan Atkinson</option>
+                                <option>Harry Potter</option>
+                            </select>
+                        </div>
+                        <input id="p-submit" type="submit" value="Done" onclick="create_order();"/>
+                    </div>
                 </div>
             </td></tr>
-        </table>-->
+        </table>
 
     
         <div style="display: table; width: 100%; height: 100%; font: 7pt Arial;">
@@ -36,9 +76,24 @@
             <div style="display: table-row; height: 0px; background-color: #6eb825;">
                 <div id="header" style="height: 100%; border-bottom: 2px solid #beb8b2; padding: 7px; position: relative;">
                     <div style="position: absolute; right: 0; bottom: 0; margin-right: 30px; margin-bottom: 8px;">
-                        <img style="margin-right: 5px;" src="img/add-white.png"/><img style="margin-left: 5px;" src="img/gear-white.png"/>
+                        <div id="credentials" style="display: inline-block;">
+                            <span class="login-label">Username:</span><input id="username" class="login-field" type="text"/>
+                            <span class="login-label">Password:</span><input id="password" class="login-field" type="password"/>
+                            <input id="login-button" class="login-button" type="submit" value="Log in"/>
+                        </div>
+                        <div id="settings" style="display: inline-block; display: none;">
+                            <span id="login-message" style="display: inline-block; vertical-align: middle; color: white; margin-right: 10px;"></span>
+                            <img style="margin-right: 5px; vertical-align: middle;" src="img/add-white.png" onclick="prepare_create_form();"/>
+                            <span style="position: relative;">
+                                <div id="admin-settings" style="position: absolute; margin-bottom: 4px; display: none;" class="actions-menu" onmouseleave="$(this).hide();">
+                                    <span class="menu-group">Admin Settings</span>
+                                    <div class="menu-item" onmouseenter="$(this).addClass('menu-select');" onmouseleave="$(this).removeClass('menu-select');" onclick="logout();">Log out</div>
+                                </div>
+                                <img style="margin-left: 5px; vertical-align: middle;" src="img/gear-white.png" onclick="$('#admin-settings').toggle();"/>
+                            </span>
+                        </div>
                     </div>
-                    <img src="img/bento-logo-white.svg" width="15%" onclick="greet();"/>
+                    <img src="img/bento-logo-white.svg" width="14%" onclick="greet();"/>
                 </div>
             </div>
         
@@ -67,8 +122,13 @@
                             <div id="driver_0" class="driver-container">
                                 <div class="orders">
                                     <div id="0_orders-pending">
-                                    <!--
-                                        <div id="order_503" class="order" position="0"><span class="order-status-symbol modified">!</span><span class="order-address">488 Battery St</span><span class="order-name">Eric O'Donnel</span><span style="display:table-cell;vertical-align:middle;text-align:right;"><img class="gear-icon" src="img/gear.png"/></span></div>
+                                        <!--
+                                        <div id="order_503" class="order" position="0"><span class="order-status-symbol modified">!</span><span class="order-address">488 Battery St</span><span class="order-name">Eric O'Donnell</span><span class="actions">
+                                            <div class="actions-menu gone">
+                                                <span class="menu-group">Actions</span>
+                                                <div class="menu-item menu-select">Text Eric O'Donnell</div>
+                                                <div class="menu-item">Delete order</div>
+                                            </div><img class="gear-icon" src="img/gear.png"/></span></div>
                                         -->
                                     </div>
                                 </div>
@@ -77,25 +137,25 @@
                         <br/>
                         Connected
                         <div id="online-drivers">
-                            <!-- Example-->
+                            <!-- Example
                             <div id="driver_900" class="driver-container">
                                 <div class="driver-header">
-                                    <span class="folding-symbol collapsed"></span><span class="status-symbol online"></span><span class="driver-name">Marc Doan</span><img class="gear-icon" src="img/gear.png"/>
+                                    <span class="folding-symbol collapsed"></span><span class="status-symbol online"></span><span class="driver-name">Marc Doan</span><span class="actions"><div class="actions-menu hidden"></div><img class="gear-icon" src="img/gear.png"/><span>
                                 </div>
-                                <div class="900_orders">
+                                <div id="900_orders" class="orders">
                                     <div class="order-status-header">Pending<span class="hide">Hide</span></div>
                                     <div id="900_orders-pending">
-                                        <div id="order_501" class="order" priority="0" draggable="true"><span class="order-status-symbol modified">!</span><span class="order-address">2017 Mission St</span><span class="order-name">Robert Cedarfield</span><span style="display:table-cell;vertical-align:middle;text-align:right;"><img class="gear-icon" src="img/gear.png"/></span></div>
-                                        <div id="order_502" class="order" priority="1" draggable="true"><span class="order-status-symbol rejected">&#x2715;</span><span class="order-address">427 Stockton St</span><span class="order-name">Buffy Summers</span><span style="display:table-cell;vertical-align:middle;text-align:right;"><img class="gear-icon" src="img/gear.png"/></span></div>
-                                        <div id="order_505" class="order" priority="2" draggable="true"><span class="order-status-symbol modified">!</span><span class="order-address">25 Divisadero Ave</span><span class="order-name">Alex Battaglia</span><span style="display:table-cell;vertical-align:middle;text-align:right;"><img class="gear-icon" src="img/gear.png"/></span></div>
+                                        <div id="order_501" class="order" priority="0" draggable="true"><span class="order-status-symbol modified">!</span><span class="order-address">2017 Mission St</span><span class="order-name">Robert Cedarfield</span><span class="actions"><img class="gear-icon" src="img/gear.png"/></span></div>
+                                        <div id="order_502" class="order" priority="1" draggable="true"><span class="order-status-symbol rejected">&#x2715;</span><span class="order-address">427 Stockton St</span><span class="order-name">Buffy Summers</span><span class="actions"><img class="gear-icon" src="img/gear.png"/></span></div>
+                                        <div id="order_505" class="order" priority="2" draggable="true"><span class="order-status-symbol modified">!</span><span class="order-address">25 Divisadero Ave</span><span class="order-name">Alex Battaglia</span><span class="actions"><img class="gear-icon" src="img/gear.png"/></span></div>
                                         <div class="order dummy" priority="-1"></div>
                                     </div>
                                     <div class="order-status-header">Complete<span class="hide">Hide</span></div>
                                     <div id="900_orders-complete">
-                                        <div id="order_506" class="order" priority="0"><span class="order-status-symbol modified" style="visibility: hidden;"></span><span class="order-address">1 Market St</span><span class="order-name">Quentin Taratino</span></div>
+                                        <div id="order_506" class="order" priority="0"><span class="order-status-symbol modified" style="visibility: hidden;"></span><span class="order-address">1 Market St</span><span class="order-name">Quentin Taratino</span><span class="actions"><img class="gear-icon" src="img/gear.png"/></span></div>
                                     </div>
                                 </div>
-                            </div>
+                            </div>-->
                         </div>
                         <br/>
                         Unavailable
@@ -120,17 +180,136 @@
             console.append(msg + '\n');
             console.scrollTop(console.height());
         }
-
+        var username, password;
+        $('#login-button').click(function () {
+            username = $('#username').val(); password = $('#password').val();
+            connect();
+        });
+        $('#username').val('atlas');
+        $('#password').val('password');
         var map = L.mapbox.map('map', 'mapbox.streets');
         var address = encodeURI('2017 Mission St, San Francisco, 94110, California, United States');
         $.ajax({
-            url: "https://api.mapbox.com/v4/geocode/mapbox.places/"+address+".json?access_token="+L.mapbox.accessToken,
+            url: "https://api.mapbox.com/v4/geocode/mapbox.places/" + address + ".json?access_token=" + L.mapbox.accessToken,
         }).done(function (res) {
             var center = res.features[0].center;
             map.setView([center[1], center[0]], 16);
         });
-      
-        connect();
+
+        function create_order() {
+            $('#p-feedback-msg').html('');
+            if ($('#p-name').val().length == 0) {
+                $('#p-feedback-msg').html('Error - Order needs a name');
+            } else if ($('#p-street').val().length == 0) {
+                $('#p-feedback-msg').html('Error - Order needs a street address');
+            } else if ($('#p-order-body').val().length == 0) {
+                console.log($('#p-order-body').val());
+                $('#p-feedback-msg').html('Error - Order body can\'t be empty');
+            } else {
+                
+                var driverIds = $("#p-drivers").val() || [];
+                var params = {
+                    name   : $('#p-name').val(),
+                    street : $('#p-street').val(),
+                    city   : $('#p-city').val(),
+                    state  : $('#p-state').val(),
+                    zipCode: $('#p-zip-code').val(),
+                    country: $('#p-country').val(),
+                    lat    : $('#p-lat').val() ,
+                    lng    : $('#p-lng').val() ,
+                    body   : $('#p-order-body').val(), };
+                if (driverIds.length == 0) {
+                    $.getJSON(houston_url + '/api/order/create', params, function (res) {
+                        if (res.code != 0) {
+                            println('Error - ' + res.msg);
+                        } else {
+                            println("created order");      
+                        }
+                    });
+                } else {
+                    for (var i = 0; i < driverIds.length; i++) {
+                        params.driverId = parseInt(driverIds[i]);
+                        $.getJSON(houston_url + '/api/order/create', params, function (res) {
+                            if (res.code != 0) {
+                                println('Error - ' + res.msg);
+                            } else {   
+                                println("created order");    
+                            }
+                        });
+                    }
+                }
+                $('#foo').hide();
+            }
+        }
+        function pick(place, lat, lng) {
+            $('#p-feedback-msg').html('');
+            var parts = place.split(', ');
+            if (parts.length != 5) {
+                $('#p-feedback-msg').html('Error - Bad address.');
+            }
+            if (parts[1] != $('#p-city').val() || parts[3] != $('#p-state').val() || parts[4] != $('#p-country').val()) {
+                $('#p-feedback-msg').html('Error - The address you picked is not in a city, state, or country that we service.');
+                return;
+            }
+            $('#p-street').val(parts[0]);
+            $('#p-zip-code').val(parts[2]);
+            $('#p-lat').val(lat);
+            $('#p-lng').val(lng);
+            //console.log($('#p-street').val() + ', ' + $('#p-city').val() + ', ' + $('#p-zip-code').val() + ', ' + $('#p-state').val() + ', ' + $('#p-country').val() + ', ' + $('#p-lat').val() + ', ' + $('#p-lng').val());
+            $('#mapbox-suggestions').hide();
+        }
+        var cnt = 0;
+        $('#p-street').keyup(function () {
+            var street = $('#p-street').val();
+            if (street.length < 3) {
+                $('#mapbox-suggestions').hide();
+                return;
+            }
+            var suffix = ', ' + $('#p-state').val() + ', ' + $('#p-country').val(); // , California, United States
+            var address = street + ', ' + $('#p-city option:selected').val() + suffix;
+            cnt = street.length;
+            $.ajax({
+                url: "https://api.mapbox.com/v4/geocode/mapbox.places/" + encodeURI(address) + ".json?types=address&access_token=" + L.mapbox.accessToken,
+            }).done((function (i) {
+                var tmp = i;
+                return function (res) {
+                    if (tmp != cnt) {
+                        return;
+                    }
+                    $('#mapbox-suggestions').html('').show();
+                    for (var i = 0; i < res.features.length; i++) {
+                        var place = res.features[i].place_name;
+                        var lat = res.features[i].center[1];
+                        var lng = res.features[i].center[0];
+                        var s = $('<div>').addClass('mapbox-suggestion')
+                                          .mouseenter(function () { $(this).addClass('mapbox-suggestion-hover'); })
+                                          .mouseleave(function () { $(this).removeClass('mapbox-suggestion-hover'); })
+                                          .html(place)
+                                          .attr('onclick', 'pick(\'' + place + '\', ' + lat + ', ' + lng + ');');
+                        $('#mapbox-suggestions').append(s);
+                    }
+                };
+            })(street.length));            
+        });
+
+        function prepare_create_form() {
+            $('#p-name').val('');
+            $('#p-street').val('');
+            $('#p-zip-code').val('');
+            $('#p-order-body').val('');
+            $('#p-drivers').html('');
+            for (var key in g.drivers) {
+                if (g.drivers.hasOwnProperty(key)) {  
+                    var driver = g.drivers[key];
+                    if (driver.status.toLowerCase() == 'online') {
+                        $('#p-drivers').append('<option value="' + driver.id + '">' + driver.name + '</option>');
+                    }
+                }
+            }
+            $('#foo').show();
+        }
+
+        println('Ready');
     </script>
   </body>
 </html>
