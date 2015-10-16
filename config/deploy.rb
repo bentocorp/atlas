@@ -36,6 +36,12 @@ set :deploy_to, '/sites/atlas'
 
 namespace :deploy do
 
+  after :finished, :symlink_config do
+  	on roles(:all) do |host|
+  		execute "ln -s #{fetch(:deploy_to)}/current/config/shared/#{fetch(:stage)} #{fetch(:deploy_to)}/current/js/config.js"
+  	end
+  end
+
   after :restart, :clear_cache do
     on roles(:web), in: :groups, limit: 3, wait: 10 do
       # Here we can do anything such as:

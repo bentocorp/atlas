@@ -1,3 +1,24 @@
+// uuid-esque generator for request ids used to coordinate push notifications
+// received from houston via node
+// http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
+function genid_rfc4122() {
+	'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+    	return v.toString(16);
+	});
+}
+var rids = [];
+// show busy (spinning) cursor and prevent user actions
+function busy(b) {
+	if (b) {
+		$('#busy-screen').show();
+		$('body').addClass('cursor-wait');
+	} else {
+		$('#busy-screen').hide();
+		$('body').removeClass('cursor-wait');
+	}
+}
+
 var Events = new (function () {
 	var self = this;
 	this.nodrop = function (e) { };
@@ -48,12 +69,12 @@ var Events = new (function () {
 		var orderId = e.dataTransfer.getData('order-id');
 	var driverId = $(e.target).attr('driver-id');
 	$('body').addClass('cursor-wait');
-	$.getJSON(houston_url + '/api/order/assign', { orderId: orderId, driverId: driverId, afterId: -1 }, function (res) {
+	$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: orderId, driverId: driverId, afterId: null }, function (res) {
 		$('body').removeClass('cursor-wait');
 		if (res.code != 0) {
 			println('Error - ' + res.msg);
 		} else {
-			//Order.move(orderId, driverId, -1);			
+			//Order.move(orderId, driverId, null);			
 		}
 	});
 	var header = $(e.target).parent();
@@ -73,7 +94,7 @@ var Events = new (function () {
 	}
 	var driverId = $(e.target).closest('.order').parent().attr('id').split('_')[0];
 	$('body').addClass('cursor-wait');
-	$.getJSON(houston_url + '/api/order/assign', { orderId: orderId, driverId: driverId, afterId: afterId }, function (res) {
+	$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: orderId, driverId: driverId, afterId: afterId }, function (res) {
 		$('body').removeClass('cursor-wait');
 		if (res.code != 0) {
 			println('Error - ' + res.msg);
@@ -87,12 +108,12 @@ var Events = new (function () {
 		var orderId = e.dataTransfer.getData('order-id');
 		var driverId = $(e.target).attr('id').split('_')[1];
 		$('body').addClass('cursor-wait');
-			$.getJSON(houston_url + '/api/order/assign', { orderId: orderId, driverId: driverId, afterId: -1 }, function (res) {
+			$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: orderId, driverId: driverId, afterId: null }, function (res) {
 				$('body').removeClass('cursor-wait');
 				if (res.code != 0) {
 					println('Error - ' + res.msg);
 				} else {
-					//Order.move(orderId, driverId, -1);			
+					//Order.move(orderId, driverId, null);			
 			}
 		});
 		$(e.target).removeClass('order-drag-enter');
@@ -101,16 +122,121 @@ var Events = new (function () {
 
 	this.order_unassign = function (order) {
 		$('body').addClass('cursor-wait');
-			$.getJSON(houston_url + '/api/order/assign', { orderId: order.id, driverId: -1, afterId: -1 }, function (res) {
+			$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: order.id, driverId: null, afterId: null }, function (res) {
 				$('body').removeClass('cursor-wait');
 				if (res.code != 0) {
 					println('Error - ' + res.msg);
 				} else {
-					//Order.move(orderId, driverId, -1);			
+					//Order.move(orderId, driverId, null);			
 			}
 		});
 		$('#order_'+order.id).removeClass('order-drag-enter');
 		_cnt = null;
 	}
+
+	this.order_delete = function (order) {
+		$('body').addClass('cursor-wait');
+		// First unassign the order
+		$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: order.id, driverId: null, afterId: null }, function (res) {
+			$('body').removeClass('cursor-wait');
+			if (res.code != 0) {
+				println('Error - Failed to unassign before deleting - ' + res.msg);
+			} else {
+				// Then delete
+				$('body').addClass('cursor-wait');
+				$.getJSON(HOUSTON_URL + '/api/order/delete', { token: token, orderId: order.id }, function (res) {
+					$('body').removeClass('cursor-wait');
+					if (res.code != 0) {
+						println('Error - The order was unassigned but failed to delete - ' + res.msg);
+					} else {
+						//Order.move(orderId, driverId, null);			
+					}
+				});
+			}
+		});
+	}
+
+	this.order_view = function (order) {
+		console.log(order);
+		$('#show-order-title').text('Order ' + order.id);
+		var address = order.address;
+		var info = order.name + "\n" + order.phone + "\n\n" + address.street + "\n" + address.city + " " +
+			address.region + " " + address.zipCode + "\n" + address.country;
+		switch (order['@class']) {
+			case 'String':
+				info = info + "\n\n" + order.item;
+				break;
+		    case 'Bento':
+		    	var bento = order.item;
+		    	for (var i = 0; i < bento.length; i++) {
+		    		var box = bento[i];
+		    		info += "\n\nBENTO BOX " + (i+1) + "\n-----------\n";
+		    		var dishes = box.items;
+		    		for (var j = 0; j < dishes.length; j++) {
+		    			var dish = dishes[j];
+		    			info += dish.type + ': (' + dish.label + ') ' + dish.name + "\n";
+		    		}
+		    		info += "\n\n";
+		    	}
+		    	break;
+			default:
+				println('Error - Trying to render order of unsupported type' + order['@class']);
+				return;
+		}
+		$('#show-order-textarea').val(info);
+		$('#order-eta').val('');
+		$('#show-order-feedback').val('');
+		$('#send-order-eta').attr("onclick", "Events.sendEta(" + order.id + ", $('#order-eta').val());");
+		$('#show-order').show();
+	};
+
+	this.resync = function () {
+		var box = $('#dialogue-textarea');
+		box.val('');
+		try {
+			$('body').addClass('cursor-wait');
+			box.val(box.val() + 'Starting resync\n');
+			$('#fullscreen-dialogue').show();
+			box.val(box.val() + 'Flushing redis\n');
+			$.getJSON(HOUSTON_URL + '/api/flushdb', { }, function (res) {
+				if (res.code != 0) {
+					throw res.msg;
+				} else {
+					box.val(box.val() + 'Done\nResyncing drivers\n');
+					$.getJSON(HOUSTON_URL + '/api/syncDrivers', { }, function (res) {
+						if (res.code != 0) {
+							throw res.msg;
+						} else {
+							box.val(box.val() + 'Done\nResyncing orders\n');
+							$.getJSON(HOUSTON_URL + '/api/syncOrders', { }, function (res) {
+								if (res.code != 0) {
+									throw res.msg;
+								} else {
+									box.val(box.val() + 'Done\nRefreshing Atlas');
+									init();
+									$('body').removeClass('cursor-wait');
+									$('#fullscreen-dialogue').hide();
+								}
+							});
+						}
+					});
+				}
+			});
+		} catch (err) {
+			$('body').removeClass('cursor-wait');
+			$('#fullscreen-dialogue').hide();
+			println('Error - ' + err);
+		}
+	};
+
+	this.sendEta = function (orderId, minutes) {
+		$.getJSON(HOUSTON_URL + '/api/sms/eta', { orderId: orderId, minutes: minutes }, function (res) {
+			if (res.code != 0) {
+				$('#show-order-feedback').html(res.msg);
+			} else {
+				$('#show-order-feedback').html('Success!');
+			}
+		});
+	};
 
 })();

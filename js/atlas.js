@@ -28,6 +28,11 @@ function create_menu(items, order, driver) {
 		var el = $('<div>').addClass('menu-item');
 		var action = items[i];
 		switch (action) {
+			case 'view-order':
+				el.html('View Order').click(function () {
+					Events.order_view(order);
+				});
+				break;
 			case 'text':
 				el.html('Text ' + order.name).click(function () { });
 				break;
@@ -41,7 +46,10 @@ function create_menu(items, order, driver) {
 				el.html('Modify').click(function () { });
 				break;
 			case 'delete-order':
-				el.html('Delete Order').click(function () { });
+				el.html('Cancel Order').click(function () {
+					Events.order_delete(order);
+					$('#actions-menu_' + order.id).hide();
+				});
 				break;
 			default:
 				throw 'Error - menu item ' + action + ' not recognized'
@@ -60,14 +68,24 @@ function render_order(order) {
 	}
 	/* Make actions menu */
 	var gearIcon = $('<img>').addClass('gear-icon').attr('src', 'img/gear.png').hide();
-	var menu = create_menu(['text', 'unassign', 'modify', 'delete-order'], order);
+	var menu = create_menu(['view-order', 'text', 'unassign', 'modify', 'delete-order'], order);
 	var actions = $('<span>').addClass('actions').append(menu).append(gearIcon);
 	gearIcon.click(function () { $(this).hide(); menu.show(); });
 	var o = $('<div>').attr('id', 'order_' + order.id).attr('order-id', order.id).addClass('order')
 		.append('<span class="order-status-symbol modified hidden"></span>')
 		.append('<span class="order-address">' + order.address.street + '</span>')
 		.append('<span class="order-name">' + order.name + '</span>').append(actions);
-	o.mouseenter(function () { gearIcon.show(); }).mouseleave(function () { gearIcon.hide(); });
+	o.mouseenter(function () {
+		gearIcon.show();
+		var marker = markers['order_' + order.id];
+		//marker.setZIndexOffset(999);
+		marker.setIcon(mkIcon(order, 'large'));
+	}).mouseleave(function () {
+		gearIcon.hide();
+		var marker = markers['order_' + order.id];
+		//marker.setZIndexOffset(998);
+		marker.setIcon(mkIcon(order, 'medium'));
+	});
 	var status = order.status.toLowerCase();
 	if ('complete' == status) {
 		menu.children('.action-unassign, .action-modify, .action-delete-order').hide();
@@ -99,22 +117,7 @@ function render_order(order) {
 	}
 	refresh_status_symbol(order);
 	// draw order on map
-	toLatLng(order.address, function (res) {
-		var marker = L.marker(
-			[res.center[1], res.center[0]],
-			{
-            	icon: L.mapbox.marker.icon(
-            		{
-              			//'marker-symbol': 'circle',
-              			'marker-size': 'medium',
-              			'marker-color': get_order_color(order.status),
-            		}
-            	)
-          	}
-        ).bindLabel(order.name);
-		markers['order_' + order.id] = marker;
-		marker.addTo(map);				
-	});
+	addOrderToMap(order);
 }
 
 function render_driver(driver) {
@@ -180,10 +183,7 @@ function greet() {
 var g = {
 	drivers: { }, orders: { }, markers: { }
 }
-var node_url = "http://localhost:8081";
-//var node_url = "http://bento-dev-nodejs01:8081";
-var houston_url = 'http://localhost:9000';
-//var houston_url = 'http://bento-dev-houston01:8081'
+
 var token;
 var clientId;
 
@@ -196,20 +196,21 @@ function clear() {
 			map.removeLayer(layer);
 		}
 	});
+	markers = { };
 }
 
 
 function init() {
 	clear();
 	// First, get drivers
-	$.getJSON(houston_url + '/api/driver/getAll', { }).done(function (res) {
+	$.getJSON(HOUSTON_URL + '/api/driver/getAll', { }).done(function (res) {
     	if (res.code != 0) {
        		println('Error fetching driver data from houston - ' + res.msg);
        	} else {
        		var drivers = res.ret;
        		println('Retrieved ' + drivers.length + ' drivers');
        		// Then get orders
-       		$.getJSON(houston_url + '/api/order/getAll', { }, function (res) {
+       		$.getJSON(HOUSTON_URL + '/api/order/getAll', { }, function (res) {
 				if (res.code != 0) {
 					println('Error fetching orders from houston - ' + res.msg);
 				} else {
@@ -220,7 +221,7 @@ function init() {
        					render_driver(driver);
        					g['drivers'][driver.id] = driver;
        					// Track each driver
-       					soc.emit('get', '/api/track?client_id=d-' + driver.id + '&token=' + token, function (str) {
+       					soc.emit('get', '/api/track?clientId=d-' + driver.id + '&token=' + token, function (str) {
        						var res = JSON.parse(str);
        						if (res.code != 0) {
        							println('Error tracking ' + res.ret.clientId + ' - ' + res.msg);
@@ -265,7 +266,7 @@ function init() {
 			});
        	}
     }).fail(function (jqxhr, textStatus, error) {
-		println('ERROR - Problem connecting to ' + houston_url);
+		println('ERROR - Problem connecting to ' + HOUSTON_URL);
 	});
 }
 
@@ -285,9 +286,9 @@ function connect() {
    		println('Connection in progress');
    		return;
     }
-    println('Connecting to node');
+    println('Connecting to node at ' + NODE_URL);
     
-    soc = io.connect(node_url, { timeout: 5000 /* 5 seconds */, 'forceNew': true, });
+    soc = io.connect(NODE_URL, { timeout: 5000 /* 5 seconds */, 'forceNew': true, });
     
     soc.on('error', function (e) {
     	println(e);
@@ -318,6 +319,7 @@ function connect() {
 	
     soc.on('stat', function (data) {
     	var push = JSON.parse(data);
+    	console.log(push);
     	var clientId = push.clientId.split("-")[1];
     	var driver = $('#driver_' + clientId);
     	if (push.status == 'connected') {
@@ -330,6 +332,7 @@ function connect() {
     		driver.children('.driver-header').children('.status-symbol').removeClass('online').addClass('offline');
     		if (markers['driver_' + clientId] != null) {
     			map.removeLayer(markers['driver_' + clientId]);
+    			delete markers['driver_' + clientId];
     		}
     	}
     });
@@ -337,10 +340,12 @@ function connect() {
 
     soc.on('loc', function (data) {
         var e = JSON.parse(data);
-        var clientId = parseInt(e.clientId.substring(1));
+        var clientId = parseInt(e.clientId.split("-")[1]);
         //console.log(e);
         //console.log(g.drivers);
         if (g.drivers[clientId] == null || g.drivers[clientId].status.toLowerCase()=='offline') {
+        	// node is always writing to atlas. communication failure to Houston will make us enter this block
+        	console.log(clientId);
         	console.log(g.drivers[clientId]);
         	return;
         }
@@ -349,23 +354,22 @@ function connect() {
         var p = [e.lat, e.lng];
         console.log(p);
         if (markers['driver_' + clientId] == null) {
-          console.log('creating loc');
+          console.log('Adding to map');
           markers['driver_'+clientId] = L.marker(p, {
             icon: L.icon({
             	iconUrl: 'img/car.svg',
             	iconSize: [32, 32],
             })
-          }).bindLabel(clientId);
+          }).bindLabel('marc');
           markers['driver_' + clientId].setZIndexOffset(999);
           markers['driver_' + clientId].addTo(map);
         } else {
-          console.log('updating loc');
           markers['driver_' + clientId].setLatLng(L.latLng(e.lat, e.lng));
         }
       });
 
     soc.on('push', function (data) {
-        var push = JSON.parse(data);//console.log(push);
+        var push = JSON.parse(data);console.log(push);
         var subject = push.subject.toLowerCase();
         switch (subject) {
         	case 'order_action':
@@ -376,22 +380,31 @@ function connect() {
         			return;
         		}
         		*/
-        		var action = JSON.parse(push.body);
+        		var action = push.body;console.log(action);
         		var type = action.type.toLowerCase();
         		var order = action.order;
         		if (type == 'create') {
-        			if (order.driverId && g.drivers[order.driverId] == null) {
+        			if (order.driverId && order.driverId >= 0 && g.drivers[order.driverId] == null) {
         				throw 'Error - the order was assigned to a driver that does not exist';
         			}
-        			g.drivers[order.driverId].orderQueue.push(order.id);
+        			if (order.driverId != null && order.driverId > 0) {
+        				var driver = g.drivers[order.driverId];
+        				if (driver != null) {
+							driver.orderQueue.push(order.id);
+        				} else {
+        					println('Error - new order assigned to non-existent driver ' + order.driverId);
+        				}
+        			}
         			render_order(order);
         			g.orders[order.id] = order;
         		} else if (type == 'assign') {
         			Order.move(order.id, action.driverId, action.after);
+        		} else if (type == 'delete') {
+        			Order.delete(order.id);
         		}
         		break;
         	case 'order_status':
-        		var body = JSON.parse(push.body);
+        		var body = push.body;
         		console.log(body.orderId + ', ' + body.status);
         		var order = g.orders[body.orderId];
         		order.status = body.status;
@@ -399,6 +412,13 @@ function connect() {
         		break;
         	default:
         		println('Unsupported subject ' + subject);
+        }
+        var i = rids.indexOf(push.rid); // rids from events.js
+        if (i >= 0) {
+        	rids.splice(i, 1);
+        	if (rids.length <= 0) {
+        		busy(false);
+        	}
         }
     });
 

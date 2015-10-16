@@ -1,8 +1,22 @@
 /* Singleton */
 var Order = new (function () {
-
+	this.delete = function (orderId) {
+		var order = g.orders[orderId];
+		var driverId = order.driverId;
+		if (driverId != null && driverId > 0) {
+			println("Error - Unassign order " + orderId + " first before deleting!");
+			return;
+		}
+		delete g.orders[orderId];
+		var marker = markers['order_' + orderId];
+		map.removeLayer(markers['order_' + orderId]);
+		delete markers['order_' + orderId];
+		$('#order_' + orderId).remove();
+	};
 	this.move = function (orderId, driverId, afterId) {
-		orderId = parseInt(orderId); driverId = parseInt(driverId); afterId = parseInt(afterId);
+		orderId = String(orderId); driverId = (driverId == null) ? -1 : parseInt(driverId);
+		//don't do this because afterId can be null
+		//afterId = String(afterId);
 		var order = g.orders[orderId];
 		if (order == null) {
 			throw 'Error - order ' + orderId + ' does not exist';
@@ -49,7 +63,7 @@ var Order = new (function () {
 			var after = null,
 				nq = driver.orderQueue,
 			    np = -1;
-			if (afterId == null || afterId < 0) {
+			if (afterId == null || afterId == "" || afterId < 0) {
 				// insert at end
 				after = $('#' + driverId + '_orders-pending').children(':last');
 				np = nq.length;

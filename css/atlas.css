@@ -1,9 +1,11 @@
 body { margin: 0; padding: 0; }
 #side-pane {
-     background-color: #c5e3a8; border-left: 2px solid #beb8b2; font: 7pt Arial; color: #444444; padding-left: 5px; padding-right: 5px; overflow-y: auto;
+     background-color: #c5e3a8; border-left: 2px solid #beb8b2; font: 7pt Arial; color: #444444;
 }
 .driver-container { border-top: 1px solid #b6dc92; }
+
 .driver-header { padding-top: 4px; padding-bottom: 1px; }
+
 .folding-symbol { display: inline-block; vertical-align: middle; width: 0; height: 0; }
 .collapsed { border-top: 3px solid transparent; border-left: 6px solid #9e7d96; border-bottom: 3px solid transparent; }
 .expanded { border-top: 6px solid #9e7d96; border-left: 3px solid transparent; border-right: 3px solid transparent; }
@@ -27,6 +29,7 @@ body { margin: 0; padding: 0; }
 .order-dummy { border-top: 2px solid transparent; padding-bottom: 0; padding-top: 0; }
 .order-drag-enter { border-top: 2px solid rgba(255, 255, 204, 0.5) }
 .driver-header-drag-enter { background-color: rgba(255, 255, 204, 0.5); }
+.marker-mouse-over { background-color: rgba(255, 255, 204, 0.5); }
 .actions { float: right; margin-top: 1px; position: relative; }
 .actions-menu { position: absolute; right: 0; border: 1px solid #555555; border-radius: 2px; background-color: #ffffff; padding: 3px; padding-bottom: 0; width: 100px; cursor: default; }
 .menu-group { font: 6pt Arial; color: #bbbbbb; }
@@ -63,7 +66,7 @@ textarea:focus { outline-width: 0; }
 .login-button:focus { outline-width: 0; }
 .hidden { visibility: hidden; }
 
-#pop-up {
+#pop-up, #show-order-pop-up {
      text-align: left; background-color: #dfefcf; width: 300px; height: 425px; border-radius: 5px; border: 2px solid #afafaf;
 }
 
