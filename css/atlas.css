@@ -79,7 +79,7 @@ select:not([multiple]) {
      background-color: #dfefcf; border: none; border-bottom: 1px solid #558e1c; margin-bottom: 2px; color: #3c6314; font-family: .HelveticaNeueDeskInterface-Regular; font-size: 11px;
      height: 20px; width: 100%;
 }
-#p-submit {
+#p-submit, #send-sms {
      position: absolute; right: 0; bottom: 0; margin: 6px; border-radius: 0px; -webkit-appearance: none; border: none; color: white; background-color: #558e1c;
 }
 

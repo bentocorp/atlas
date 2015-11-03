@@ -184,9 +184,11 @@ var Events = new (function () {
 				return;
 		}
 		$('#show-order-textarea').val(info);
-		$('#order-eta').val('');
+		var first = order.name.split(" ")[0];
+		var dyfault = 'Hey ' + first + '! Your Bento server is about 20 minutes away. Thanks for being patient and enjoy your Bento!';
+		$('#sms-textarea').val(dyfault);
 		$('#show-order-feedback').val('');
-		$('#send-order-eta').attr("onclick", "Events.sendEta(" + order.id + ", $('#order-eta').val());");
+		$('#send-sms').attr("onclick", "Events.sendSms('" + order.id + "', $('#sms-textarea').val());");
 		$('#show-order').show();
 	};
 
@@ -229,8 +231,8 @@ var Events = new (function () {
 		}
 	};
 
-	this.sendEta = function (orderId, minutes) {
-		$.getJSON(HOUSTON_URL + '/api/sms/eta', { orderId: orderId, minutes: minutes }, function (res) {
+	this.sendSms = function (orderId, msg) {
+		$.getJSON(HOUSTON_URL + '/api/sms/send', { orderId: orderId, msg: msg }, function (res) {
 			if (res.code != 0) {
 				$('#show-order-feedback').html(res.msg);
 			} else {

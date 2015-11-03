@@ -28,7 +28,6 @@
             </td></tr>
         </table>
 
-
         <table id="show-order" style="position: absolute; width: 100%; height: 100%; font: 7pt Arial; background-color: rgba(0,0,0,0); z-index: 9998; display: none;">
             <tr><td valign="middle" align="center">
                 <div id="show-order-pop-up" style="position: relative;">
@@ -37,10 +36,11 @@
                         <span style="float: right; font: 11pt Arial; color: white; margin-top: 2px; margin-right: 3px; cursor: default;" onclick="$('#show-order').hide();">&#x2715;</span>
                     </div>
                     <div id="show-order-body" style="padding: 6px;">
-                        
-                        <textarea disabled id="show-order-textarea" style="height: 350px; font-family: Courier New, Courier, monospace"></textarea>
-                        ETA<br/>
-                        <input id="order-eta" type="text"/> MIN. <input id="send-order-eta" type="submit" value="Send"/>
+                        <span></span>
+                        <textarea disabled id="show-order-textarea" style="height: 200px; font-family: .HelveticaNeueDeskInterface-Regular; border: 1px solid #558e1c; padding: 5px; overflow-y: scoll;"></textarea>
+                        <div style="margin-top: 7px;">SMS</div>
+                        <textarea id="sms-textarea" style="height: 75px; font-family: .HelveticaNeueDeskInterface-Regular; border: 1px solid #558e1c; padding: 5px; overflow-y: scoll;"></textarea>                        
+                        <div style="text-align: right; margin-top: 7px;"><input id="send-sms" style="position: static; margin: 0px;" type="submit" value="Send"/></div>
                         <div id="show-order-feedback"></div>
                     </div>
                 </div>
