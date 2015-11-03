@@ -140,7 +140,25 @@ function render_driver(driver) {
 	  	.append('<span class="status-symbol ' + status + '"></span>')
 	  	.append('<span driver-id="'+driver.id+'" class="driver-name" ondragover="Events.dragover(event);" ondragenter="Events.driver_dragenter(event);" ondragleave="Events.driver_dragleave(event);" ondrop="Events.driver_ondrop(event);">' + driver.name + '</span>')
 	  	.append(actions);
-	driverHeader.mouseenter(function () { gearIcon.toggle(); }).mouseleave(function () { gearIcon.toggle(); });
+	driverHeader.mouseenter(function () { 
+		gearIcon.toggle();
+		var marker = markers['driver_' + driver.id];
+		if (marker != null) {
+			marker.setIcon(L.icon({
+        		iconUrl: 'img/car.svg',
+            	iconSize: [48, 48],
+        	}));
+		}
+	}).mouseleave(function () {
+		gearIcon.toggle();
+		var marker = markers['driver_' + driver.id];
+		if (marker != null) {
+			marker.setIcon(L.icon({
+        		iconUrl: 'img/car.svg',
+            	iconSize: [32, 32],
+        	}));
+		}
+	});
 	// orders
 	var _mkOrderStatusHeader = function (divId, text) {
 		var hide = $('<span>').addClass('hide').html('Hide').click(function () {
