@@ -168,6 +168,11 @@ var Events = new (function () {
 				break;
 		    case 'Bento':
 		    	var bento = order.item;
+		    	if (order.orderString != null && order.orderStringn != "") {
+		    		console.log(order.orderString);
+		    		info += "\n\n" + order.orderString.replace(/\\n/g, "\n");
+		    		break;
+		    	}
 		    	for (var i = 0; i < bento.length; i++) {
 		    		var box = bento[i];
 		    		info += "\n\nBENTO BOX " + (i+1) + "\n-----------\n";
@@ -187,7 +192,7 @@ var Events = new (function () {
 		var first = order.name.split(" ")[0];
 		var dyfault = 'Hey ' + first + '! Your Bento server is about 20 minutes away. Thanks for being patient and enjoy your Bento!';
 		$('#sms-textarea').val(dyfault);
-		$('#show-order-feedback').val('');
+		$('#show-order-feedback').html('');
 		$('#send-sms').attr("onclick", "Events.sendSms('" + order.id + "', $('#sms-textarea').val());");
 		$('#show-order').show();
 	};
