@@ -78,13 +78,17 @@ function render_order(order) {
 	o.mouseenter(function () {
 		gearIcon.show();
 		var marker = markers['order_' + order.id];
-		//marker.setZIndexOffset(999);
-		marker.setIcon(mkIcon(order, 'large'));
+		if (marker != null) {
+			//marker.setZIndexOffset(999);
+			marker.setIcon(mkIcon(order, 'large'));
+		}
 	}).mouseleave(function () {
 		gearIcon.hide();
 		var marker = markers['order_' + order.id];
-		//marker.setZIndexOffset(998);
-		marker.setIcon(mkIcon(order, 'medium'));
+		if (marker != null) {
+			//marker.setZIndexOffset(998);
+			marker.setIcon(mkIcon(order, 'medium'));
+		}
 	});
 	var status = order.status.toLowerCase();
 	if ('complete' == status) {
