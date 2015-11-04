@@ -337,7 +337,7 @@ function connect() {
 	
     soc.on('stat', function (data) {
     	var push = JSON.parse(data);
-    	console.log(push);
+    	//console.log(push);
     	var clientId = push.clientId.split("-")[1];
     	var driver = $('#driver_' + clientId);
     	if (push.status == 'connected') {
@@ -389,15 +389,16 @@ function connect() {
     soc.on('push', function (data) {
         var push = JSON.parse(data);console.log(push);
         var subject = push.subject.toLowerCase();
+        // Ignore out-dated push notifications
+        /*
+        if (push.timestamp < readyTs) {
+        	console.log('Out-dated push for readyTs=' + readyTs);
+        	console.log(push);
+        	return;
+        }
+        */
         switch (subject) {
         	case 'order_action':
-        	/* !!!
-        		if (push.timestamp < readyTs) {
-        			console.log('Out-dated push for readyTs=' + readyTs);
-        			console.log(push);
-        			return;
-        		}
-        		*/
         		var action = push.body;console.log(action);
         		var type = action.type.toLowerCase();
         		var order = action.order;
@@ -430,6 +431,7 @@ function connect() {
         		var order = g.orders[body.orderId];
         		order.status = body.status;
         		refresh_status_symbol(order);
+        		recolor(order);
         		break;
         	default:
         		println('Unsupported subject ' + subject);

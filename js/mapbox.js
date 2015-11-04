@@ -29,11 +29,10 @@ function highlight(order) {
 }
 
 function recolor(order) {
-	var id = order.attr('id')
-	var o = orders[id.split('_')[1]];
-	markers[id].setIcon(
+	var o = order;
+	markers['order_' + o.id].setIcon(
 		L.mapbox.marker.icon({
-        	'marker-symbol': 'circle',
+        	'marker-symbol': o.id.split('-')[0],
             'marker-size': 'medium',
             'marker-color': get_order_color(o.status),
         })
