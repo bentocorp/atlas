@@ -116,8 +116,10 @@ function render_order(order) {
 		 .attr('ondrop'     , 'Events.order_ondrop(event);');
 	}
 	refresh_status_symbol(order);
-	// draw order on map
-	addOrderToMap(order);
+	// draw order on map if not complete
+	if ('complete' != status) {
+		addOrderToMap(order);
+	}
 }
 
 function render_driver(driver) {

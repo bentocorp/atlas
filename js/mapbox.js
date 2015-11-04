@@ -30,7 +30,15 @@ function highlight(order) {
 
 function recolor(order) {
 	var o = order;
-	markers['order_' + o.id].setIcon(
+    var marker = markers['order_' + o.id];
+    /*
+    // Test usability if we don't render completed orders
+    if (o.status == 'complete') {
+        map.removeLayer(marker);
+        return;
+    }
+    */
+	marker.setIcon(
 		L.mapbox.marker.icon({
         	'marker-symbol': o.id.split('-')[0],
             'marker-size': 'medium',
