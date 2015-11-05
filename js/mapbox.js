@@ -113,3 +113,27 @@ function addOrderToMap(order) {
         marker.addTo(map);              
     });
 }
+
+var routes = { };
+function hideRoute(driverId) {
+    var layer = routes[driverId];
+    if (layer != null) {
+        map.removeLayer(layer);
+        delete routes[driverId];
+    }
+}
+function drawRoute(driverId) {
+    var driver = g.drivers[driverId];
+    var line = [];
+    line.push(markers['driver_' + driverId].getLatLng());
+    var q = driver.orderQueue;
+    for (var i = 0; i < q.length; i++) {
+        //var order = g.orders[q[i]];
+        line.push(markers['order_' + q[i]].getLatLng());
+    }
+    var route = L.polyline(line, { color: '#000' });
+    //console.log(route);
+    var pane = route.addTo(map);
+    console.log(pane);
+    routes[driverId] = route;
+}

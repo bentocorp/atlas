@@ -386,6 +386,13 @@ function connect() {
             	iconSize: [32, 32],
             })
           }).bindLabel(g.drivers[clientId].name);
+          var m = markers['driver_' + clientId];
+          m.on('mouseover', function () {
+        	drawRoute(clientId);
+          });
+          m.on('mouseout', function () {
+          	hideRoute(clientId);
+          });
           markers['driver_' + clientId].setZIndexOffset(999);
           markers['driver_' + clientId].addTo(map);
         } else {
