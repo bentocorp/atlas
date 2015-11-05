@@ -384,7 +384,7 @@ function connect() {
             	iconUrl: 'img/car.svg',
             	iconSize: [32, 32],
             })
-          }).bindLabel('marc');
+          }).bindLabel(g.drivers[clientId].name);
           markers['driver_' + clientId].setZIndexOffset(999);
           markers['driver_' + clientId].addTo(map);
         } else {
