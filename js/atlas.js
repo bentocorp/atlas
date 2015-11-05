@@ -121,7 +121,8 @@ function render_order(order) {
 	}
 	refresh_status_symbol(order);
 	// draw order on map if not complete
-	if ('complete' != status) {
+	var driver = g.drivers[order.driverId];
+	if ('complete' != status && driver != null && driver.status=='ONLINE') {
 		addOrderToMap(order);
 	}
 }
