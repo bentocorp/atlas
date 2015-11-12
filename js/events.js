@@ -69,7 +69,9 @@ var Events = new (function () {
 		var orderId = e.dataTransfer.getData('order-id');
 	var driverId = $(e.target).attr('driver-id');
 	$('body').addClass('cursor-wait');
-	$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: orderId, driverId: driverId, afterId: null }, function (res) {
+	var rid = genid_rfc4122();
+	rids.push(rid);
+	$.getJSON(HOUSTON_URL + '/api/order/assign', { rid: rid, token: token, orderId: orderId, driverId: driverId, afterId: null }, function (res) {
 		$('body').removeClass('cursor-wait');
 		if (res.code != 0) {
 			println('Error - ' + res.msg);
@@ -94,7 +96,9 @@ var Events = new (function () {
 	}
 	var driverId = $(e.target).closest('.order').parent().attr('id').split('_')[0];
 	$('body').addClass('cursor-wait');
-	$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: orderId, driverId: driverId, afterId: afterId }, function (res) {
+	var rid = genid_rfc4122();
+	rids.push(rid);
+	$.getJSON(HOUSTON_URL + '/api/order/assign', { rid: rid, token: token, orderId: orderId, driverId: driverId, afterId: afterId }, function (res) {
 		$('body').removeClass('cursor-wait');
 		if (res.code != 0) {
 			println('Error - ' + res.msg);
@@ -107,8 +111,10 @@ var Events = new (function () {
 	this.dummy_ondrop = function (e) {
 		var orderId = e.dataTransfer.getData('order-id');
 		var driverId = $(e.target).attr('id').split('_')[1];
+		var rid = genid_rfc4122();
+		rids.push(rid);
 		$('body').addClass('cursor-wait');
-			$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: orderId, driverId: driverId, afterId: null }, function (res) {
+			$.getJSON(HOUSTON_URL + '/api/order/assign', { rid: rid, token: token, orderId: orderId, driverId: driverId, afterId: null }, function (res) {
 				$('body').removeClass('cursor-wait');
 				if (res.code != 0) {
 					println('Error - ' + res.msg);
@@ -205,17 +211,17 @@ var Events = new (function () {
 			box.val(box.val() + 'Starting resync\n');
 			$('#fullscreen-dialogue').show();
 			box.val(box.val() + 'Flushing redis\n');
-			$.getJSON(HOUSTON_URL + '/api/flushdb', { }, function (res) {
+			$.getJSON(HOUSTON_URL + '/api/flushdb', { token: token }, function (res) {
 				if (res.code != 0) {
 					throw res.msg;
 				} else {
 					box.val(box.val() + 'Done\nResyncing drivers\n');
-					$.getJSON(HOUSTON_URL + '/api/syncDrivers', { }, function (res) {
+					$.getJSON(HOUSTON_URL + '/api/syncDrivers', { token: token }, function (res) {
 						if (res.code != 0) {
 							throw res.msg;
 						} else {
 							box.val(box.val() + 'Done\nResyncing orders\n');
-							$.getJSON(HOUSTON_URL + '/api/syncOrders', { }, function (res) {
+							$.getJSON(HOUSTON_URL + '/api/syncOrders', { token: token }, function (res) {
 								if (res.code != 0) {
 									throw res.msg;
 								} else {
@@ -237,7 +243,7 @@ var Events = new (function () {
 	};
 
 	this.sendSms = function (orderId, msg) {
-		$.getJSON(HOUSTON_URL + '/api/sms/send', { orderId: orderId, msg: msg }, function (res) {
+		$.getJSON(HOUSTON_URL + '/api/sms/send', { orderId: orderId, msg: msg, token: token }, function (res) {
 			if (res.code != 0) {
 				$('#show-order-feedback').html(res.msg);
 			} else {

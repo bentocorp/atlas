@@ -226,6 +226,7 @@ function clear() {
 
 
 function init() {
+	busy(true);
 	clear();
 	// First, get drivers
 	$.getJSON(HOUSTON_URL + '/api/driver/getAll', { token: token }).done(function (res) {
@@ -287,6 +288,7 @@ function init() {
 					println('Fetched ' + orderCnt + ' orders')
 					// UTC timestamp
 					readyTs = new Date().getTime();
+					busy(false);
 				}
 			});
        	}
@@ -411,6 +413,14 @@ function connect() {
         	return;
         }
         */
+        var i = rids.indexOf(push.rid); // rids from events.js
+        console.log('push.rid=' + push.rid + ', i=' + i); console.log(rids);
+        if (i >= 0) {
+        	rids.splice(i, 1);
+        	if (rids.length <= 0) {
+        		//busy(false); Make sure not to conflict with init()
+        	}
+        }
         switch (subject) {
         	case 'order_action':
         		var action = push.body;console.log(action);
@@ -449,13 +459,6 @@ function connect() {
         		break;
         	default:
         		println('Unsupported subject ' + subject);
-        }
-        var i = rids.indexOf(push.rid); // rids from events.js
-        if (i >= 0) {
-        	rids.splice(i, 1);
-        	if (rids.length <= 0) {
-        		busy(false);
-        	}
         }
     });
 
