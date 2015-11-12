@@ -121,6 +121,7 @@
                                 <div id="admin-settings" style="position: absolute; margin-bottom: 4px; display: none;" class="actions-menu" onmouseleave="$(this).hide();">
                                     <span class="menu-group">Admin Settings</span>
                                     <div class="menu-item" onmouseenter="$(this).addClass('menu-select');" onmouseleave="$(this).removeClass('menu-select');" onclick="logout();">Log out</div>
+                                    <div class="menu-item" onmouseenter="$(this).addClass('menu-select');" onmouseleave="$(this).removeClass('menu-select');" onclick="init();">Refresh</div>
                                     <div class="menu-item" onmouseenter="$(this).addClass('menu-select');" onmouseleave="$(this).removeClass('menu-select');" onclick="Events.resync();">Force Houston resync</div>
                                 </div>
                                 <img style="margin-left: 5px; vertical-align: middle;" src="img/gear-white.png" onclick="$('#admin-settings').toggle();"/>
@@ -246,8 +247,8 @@
             username = $('#username').val(); password = $('#password').val();
             connect();
         });
-        $('#username').val('atlas');
-        $('#password').val('password');
+        $('#username').val('');
+        $('#password').val('');
         var map = L.mapbox.map('map', 'mapbox.streets');
         // XXX - Not sure why, but Mapbox will return bad results if you include the zip code
         var address = encodeURI('2017 Mission St, San Francisco, California, United States');

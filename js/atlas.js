@@ -228,14 +228,14 @@ function clear() {
 function init() {
 	clear();
 	// First, get drivers
-	$.getJSON(HOUSTON_URL + '/api/driver/getAll', { }).done(function (res) {
+	$.getJSON(HOUSTON_URL + '/api/driver/getAll', { token: token }).done(function (res) {
     	if (res.code != 0) {
        		println('Error fetching driver data from houston - ' + res.msg);
        	} else {
        		var drivers = res.ret;
        		println('Retrieved ' + drivers.length + ' drivers');
        		// Then get orders
-       		$.getJSON(HOUSTON_URL + '/api/order/getAll', { }, function (res) {
+       		$.getJSON(HOUSTON_URL + '/api/order/getAll', { token: token }, function (res) {
 				if (res.code != 0) {
 					println('Error fetching orders from houston - ' + res.msg);
 				} else {

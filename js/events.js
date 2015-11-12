@@ -190,7 +190,7 @@ var Events = new (function () {
 		}
 		$('#show-order-textarea').val(info);
 		var first = order.name.split(" ")[0];
-		var dyfault = 'Hey ' + first + '! Your Bento server is about 20 minutes away. Thanks for being patient and enjoy your Bento!';
+		var dyfault = 'Hi ' + first + ",\nThanks for ordering Bento! Your order should arrive in about 20 minutes. We'll message you once your order is on its way.";
 		$('#sms-textarea').val(dyfault);
 		$('#show-order-feedback').html('');
 		$('#send-sms').attr("onclick", "Events.sendSms('" + order.id + "', $('#sms-textarea').val());");
