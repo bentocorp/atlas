@@ -2,7 +2,7 @@
 // received from houston via node
 // http://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
 function genid_rfc4122() {
-	'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 		var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
     	return v.toString(16);
 	});
@@ -70,6 +70,7 @@ var Events = new (function () {
 	var driverId = $(e.target).attr('driver-id');
 	$('body').addClass('cursor-wait');
 	var rid = genid_rfc4122();
+	console.log("rid="+rid);
 	rids.push(rid);
 	$.getJSON(HOUSTON_URL + '/api/order/assign', { rid: rid, token: token, orderId: orderId, driverId: driverId, afterId: null }, function (res) {
 		$('body').removeClass('cursor-wait');

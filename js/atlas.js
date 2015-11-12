@@ -442,7 +442,7 @@ function connect() {
         			g.orders[order.id] = order;
         		} else if (type == 'assign') {
         			Order.move(order.id, action.driverId, action.after);
-        			if (order.driverId != null && order.driverId > 0) {
+        			if (order.driverId != null && order.driverId > 0 && i >= 0) {
         				Events.order_view(order);
         			}
         		} else if (type == 'delete') {
