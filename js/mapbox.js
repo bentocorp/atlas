@@ -6,7 +6,7 @@ var markers = { };
 // Make sure same with atlas.css
 function get_order_color(status) {
 	switch (status.toLowerCase()) {
-        case 'pending':
+        case 'pending'   : return '#8467d7';
         case 'unassigned': return '#bbbbbb';
         case 'modified'  : return '#fffb67';
 		case 'accepted'  : return '#0066cc'; // blue

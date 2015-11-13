@@ -384,8 +384,8 @@ function connect() {
           console.log('Adding to map');
           markers['driver_'+clientId] = L.marker(p, {
             icon: L.icon({
-            	iconUrl: 'img/circle-12.svg',
-            	iconSize: [18, 18],
+               iconUrl: 'img/circle-12.svg',
+               iconSize: [18, 18],
             })
           }).bindLabel(g.drivers[clientId].name);
           var m = markers['driver_' + clientId];
@@ -447,8 +447,12 @@ function connect() {
         		} else if (type == 'assign') {
         			Order.move(order.id, action.driverId, action.after);
         			if (order.driverId != null && order.driverId > 0 && i >= 0) {
+        				// TODO - Houston currently does not send order_status push notifications for 'pending'
+        				order.status = 'pending';
         				Events.order_view(order);
         			}
+        			refresh_status_symbol(order);
+        			recolor(order);
         		} else if (type == 'delete') {
         			Order.delete(order.id);
         		}
@@ -476,6 +480,9 @@ function connect() {
         			} else {
         				orderQueue.splice(j, 1);
         			}
+        			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').hide();
+        			$('#order_' + order.id + '> .actions > .actions-menu > .action-delete-order').hide();
+        			$('#order_' + order.id + '> .actions > .actions-menu > .action-modify').hide();
         		} else {
         			recolor(order);
         		}
