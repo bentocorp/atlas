@@ -152,8 +152,8 @@ function render_driver(driver) {
 		var marker = markers['driver_' + driver.id];
 		if (marker != null) {
 			marker.setIcon(L.icon({
-        		iconUrl: 'img/car.svg',
-            	iconSize: [48, 48],
+        		iconUrl: 'img/circle-12-yellow.svg',
+            	iconSize: [24, 24],
         	}));
 		}
 	}).mouseleave(function () {
@@ -161,8 +161,8 @@ function render_driver(driver) {
 		var marker = markers['driver_' + driver.id];
 		if (marker != null) {
 			marker.setIcon(L.icon({
-        		iconUrl: 'img/car.svg',
-            	iconSize: [32, 32],
+        		iconUrl: 'img/circle-12.svg',
+            	iconSize: [18, 18],
         	}));
 		}
 	});
@@ -384,8 +384,8 @@ function connect() {
           console.log('Adding to map');
           markers['driver_'+clientId] = L.marker(p, {
             icon: L.icon({
-            	iconUrl: 'img/car.svg',
-            	iconSize: [32, 32],
+            	iconUrl: 'img/circle-12.svg',
+            	iconSize: [18, 18],
             })
           }).bindLabel(g.drivers[clientId].name);
           var m = markers['driver_' + clientId];
@@ -405,14 +405,7 @@ function connect() {
     soc.on('push', function (data) {
         var push = JSON.parse(data);console.log(push);
         var subject = push.subject.toLowerCase();
-        // Ignore out-dated push notifications
-        /*
-        if (push.timestamp < readyTs) {
-        	console.log('Out-dated push for readyTs=' + readyTs);
-        	console.log(push);
-        	return;
-        }
-        */
+        
         var i = rids.indexOf(push.rid); // rids from events.js
         console.log('push.rid=' + push.rid + ', i=' + i); console.log(rids);
         if (i >= 0) {
@@ -421,6 +414,17 @@ function connect() {
         		//busy(false); Make sure not to conflict with init()
         	}
         }
+        // Ignore out-dated push notifications
+        /*
+        if (push.timestamp < readyTs) {
+        	// because each server may have a slightly different view of time, this will not always be accurate
+        	// and so it is also important that order functions such as assignment are also idempotent
+        	// Note some servers may be ahead as 2 minutes
+        	console.log('Out-dated push for readyTs=' + readyTs);
+        	console.log(push);
+        	return;
+        }
+        */
         switch (subject) {
         	case 'order_action':
         		var action = push.body;console.log(action);
@@ -455,7 +459,26 @@ function connect() {
         		var order = g.orders[body.orderId];
         		order.status = body.status;
         		refresh_status_symbol(order);
-        		recolor(order);
+        		if (order.status.toLowerCase() == 'complete') {
+        			// If complete, remove order marker from map and remove order from driver's queue
+        			var orderMarker = markers['order_' + order.id];
+        			if (orderMarker != null) {
+        				map.removeLayer(orderMarker);
+        			}
+        			delete markers['order_' + order.id];
+        			var driver = g.drivers[order.driverId];
+        			var orderQueue = driver.orderQueue;
+        			var j = orderQueue.indexOf(order.id);
+        			if (j < 0) {
+        				var msg = "Error - order " + order.id + " marked as complete for driver " + order.driverId + " but not found in queue";
+        				println(msg);
+        				console.log(msg); console.log(order); console.log(driver);
+        			} else {
+        				orderQueue.splice(j, 1);
+        			}
+        		} else {
+        			recolor(order);
+        		}
         		break;
         	default:
         		println('Unsupported subject ' + subject);

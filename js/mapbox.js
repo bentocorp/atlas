@@ -134,6 +134,5 @@ function drawRoute(driverId) {
     var route = L.polyline(line, { color: '#000' });
     //console.log(route);
     var pane = route.addTo(map);
-    console.log(pane);
     routes[driverId] = route;
 }
