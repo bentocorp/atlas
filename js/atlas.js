@@ -446,11 +446,13 @@ function connect() {
         			g.orders[order.id] = order;
         		} else if (type == 'assign') {
         			Order.move(order.id, action.driverId, action.after);
-        			if (order.driverId != null && order.driverId > 0 && i >= 0) {
+        			if (order.driverId != null && order.driverId > 0) {
         				// TODO - Houston currently does not send order_status push notifications for 'pending'
         				order.status = 'pending';
         				g.orders[order.id].status = 'pending';
-        				Events.order_view(order);
+        				if (i >= 0) {
+        					Events.order_view(order);
+        				}
         			}
         			refresh_status_symbol(order);
         			recolor(order);
