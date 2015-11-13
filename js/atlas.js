@@ -328,7 +328,7 @@ function connect() {
     soc.on('connect', function () {
     	println('Connection established');
         println('Authenticating');
-        soc.emit('get', '/api/authenticate?username='+username+'&password='+password+'&type=admin', function (data) {
+        soc.emit('get', '/api/authenticate?username='+username+'&password='+encodeURI(password)+'&type=admin', function (data) {
         	var res = JSON.parse(data);
         	if (res.code != 0) {
         		println('Error authenticating - ' + res.msg);
