@@ -449,6 +449,7 @@ function connect() {
         			if (order.driverId != null && order.driverId > 0 && i >= 0) {
         				// TODO - Houston currently does not send order_status push notifications for 'pending'
         				order.status = 'pending';
+        				g.orders[order.id].status = 'pending';
         				Events.order_view(order);
         			}
         			refresh_status_symbol(order);

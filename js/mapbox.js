@@ -45,7 +45,7 @@ function recolor(order) {
             'marker-color': get_order_color(o.status),
         })
 	);
-    if (o.status == 'accepted' || o.status == 'rejected' || o.status == 'complete') {
+    if (o.status == 'accepted' || o.status == 'rejected' || o.status == 'complete' || o.status == 'pending') {
         order.css('font-weight', 'bold').css('color', get_order_color(o.status));
     }
 }
