@@ -31,13 +31,10 @@ function highlight(order) {
 function recolor(order) {
 	var o = order;
     var marker = markers['order_' + o.id];
-    /*
-    // Test usability if we don't render completed orders
-    if (o.status == 'complete') {
-        map.removeLayer(marker);
+    if (marker == null) {
+        console.log('Error - Trying to recolor non-existent marker for order ' + o.id);
         return;
     }
-    */
 	marker.setIcon(
 		L.mapbox.marker.icon({
         	'marker-symbol': o.id.split('-')[0],
@@ -45,9 +42,6 @@ function recolor(order) {
             'marker-color': get_order_color(o.status),
         })
 	);
-    if (o.status == 'accepted' || o.status == 'rejected' || o.status == 'complete' || o.status == 'pending') {
-        order.css('font-weight', 'bold').css('color', get_order_color(o.status));
-    }
 }
 
 function toLatLng(order, callback) {
