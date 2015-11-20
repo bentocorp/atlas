@@ -58,6 +58,8 @@ var Order = new (function () {
 		} else {
 			var driver = g.drivers[driverId];
 			if (driver == null) {
+				console.log((typeof driverId) + '(' + driverId + ')');
+				console.log(g.drivers);
 				throw 'Error - driver ' + driverId + ' does not exist';
 			}
 			var after = null,

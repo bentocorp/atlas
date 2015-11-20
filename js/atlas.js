@@ -213,7 +213,7 @@ var token;
 var clientId;
 
 function clear() {
-	g['drivers'] = { };
+	g.drivers = { };
 	g['orders'] = { };
 	$('#0_orders-pending, #online-drivers, #offline-drivers').html('');
 	map.eachLayer(function (layer) {
@@ -245,7 +245,7 @@ function init() {
        				for (var i = 0; i < drivers.length; i++) {
        					var driver = drivers[i];
        					render_driver(driver);
-       					g['drivers'][driver.id] = driver;
+       					g.drivers[parseInt(driver.id)] = driver;
        					// Track each driver
        					soc.emit('get', '/api/track?clientId=d-' + driver.id + '&token=' + token, function (str) {
        						var res = JSON.parse(str);
@@ -347,7 +347,7 @@ function connect() {
     soc.on('stat', function (data) {
     	var push = JSON.parse(data);
     	//console.log(push);
-    	var clientId = push.clientId.split("-")[1];
+    	var clientId = parseInt(push.clientId.split("-")[1]);
     	var driver = $('#driver_' + clientId);
     	if (push.status == 'connected') {
     		g.drivers[clientId].status='ONLINE';
@@ -464,6 +464,9 @@ function connect() {
         		var body = push.body;
         		console.log(body.orderId + ', ' + body.status);
         		var order = g.orders[body.orderId];
+        		if (order == undefined) {
+        			console.log(g.orders);
+        		}
         		order.status = body.status;
         		refresh_status_symbol(order);
         		if (order.status.toLowerCase() == 'complete') {
