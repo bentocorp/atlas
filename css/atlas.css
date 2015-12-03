@@ -67,7 +67,7 @@ textarea:focus { outline-width: 0; }
 .hidden { visibility: hidden; }
 
 #pop-up, #show-order-pop-up {
-     text-align: left; background-color: #dfefcf; width: 300px; height: 425px; border-radius: 5px; border: 2px solid #afafaf;
+     text-align: left; background-color: #dfefcf; width: 300px; height: 475px; border-radius: 5px; border: 2px solid #afafaf;
 }
 
 select:not([multiple]) {
@@ -79,7 +79,7 @@ select:not([multiple]) {
      background-color: #dfefcf; border: none; border-bottom: 1px solid #558e1c; margin-bottom: 2px; color: #3c6314; font-family: .HelveticaNeueDeskInterface-Regular; font-size: 11px;
      height: 20px; width: 100%;
 }
-#p-submit, #send-sms {
+#p-submit, #send-sms, #p-submit-modify {
      position: absolute; right: 0; bottom: 0; margin: 6px; border-radius: 0px; -webkit-appearance: none; border: none; color: white; background-color: #558e1c;
 }
 
@@ -90,11 +90,17 @@ select:not([multiple]) {
      background-color: #eeeeee;
 }
 #p-order-body {
-     height: 150px; margin-top: 10px; border: 1px solid #558e1c; color: #3c6314; font-family: .HelveticaNeueDeskInterface-Regular; background-color: #ffffff
+     height: 125px; margin-top: 10px; border: 1px solid #558e1c; font-family: .HelveticaNeueDeskInterface-Regular; background-color: #ffffff;
+     overflow-y: scroll;
 }
+
+#p-notes {
+     height: 50px; margin-top: 2px; border: 1px solid #558e1c; color: #3c6314; font-family: .HelveticaNeueDeskInterface-Regular; background-color: #ffffff;
+     overflow-y: scroll;
+}
+
 #p-city {
      border-radius: 0px; height: 20px; border: none; width: 100%; border-bottom: 1px solid #558e1c; background-color: #dfefcf; font-family: .HelveticaNeueDeskInterface-Regular;
-     color: #3c6314;
 }
 #p-city:not([multiple]) {
      outline-width: 0px;
@@ -107,4 +113,10 @@ select:not([multiple]) {
 #mapbox-suggestions {
      position: absolute; background-color: white; font-size: 7pt; font-family: .HelveticaNeueDeskInterface-Regular; right: 2px; left: 0px; color: #558e1c; border: 1px solid #558e1c;
      cursor: default;
+}
+
+.p-select { color: #3c6314; }
+.p-textarea { color: #3c6314; }
+.textfield-disabled {
+     color: #778877;
 }

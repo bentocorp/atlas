@@ -50,6 +50,7 @@ var Order = new (function () {
 			order.status="UNASSIGNED";
 			refresh_status_symbol(order);
 			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').hide();
+			$('#order_' + order.id + '> .actions > .actions-menu > .action-modify').show();
 			// XXXXX >>>>>>>>>>>>
 			//if ($('#' + cd.id + '_orders-pending').children().length < 2) {
 			//	$('#driver_' + cd.id + ' > .driver-header > .folding-symbol').removeClass('expanded').addClass('collapsed').addClass('transparent');
@@ -94,6 +95,7 @@ var Order = new (function () {
 			$('#driver_' + driverId + ' > .driver-header > .folding-symbol').removeClass('collapsed').addClass('expanded').removeClass('transparent');
 			$('#' + driverId + '_orders').show();
 			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').show();
+			$('#order_' + order.id + '> .actions > .actions-menu > .action-modify').hide();
 			// }}
 		}
 	};
