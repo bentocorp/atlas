@@ -127,9 +127,9 @@ var Events = new (function () {
 		_cnt = null;
 	}
 
-	this.order_unassign = function (order) {
+	this.order_unassign = function (orderId) {
 		$('body').addClass('cursor-wait');
-			$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: order.id, driverId: null, afterId: null }, function (res) {
+			$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: orderId, driverId: null, afterId: null }, function (res) {
 				$('body').removeClass('cursor-wait');
 				if (res.code != 0) {
 					println('Error - ' + res.msg);
@@ -137,11 +137,12 @@ var Events = new (function () {
 					//Order.move(orderId, driverId, null);			
 			}
 		});
-		$('#order_'+order.id).removeClass('order-drag-enter');
+		$('#order_'+orderId).removeClass('order-drag-enter');
 		_cnt = null;
 	}
 
-	this.order_delete = function (order) {
+	this.order_delete = function (orderId) {
+		var order = g.orders[orderId];
 		$('body').addClass('cursor-wait');
 		// First unassign the order
 		$.getJSON(HOUSTON_URL + '/api/order/assign', { token: token, orderId: order.id, driverId: null, afterId: null }, function (res) {
@@ -163,8 +164,8 @@ var Events = new (function () {
 		});
 	}
 
-	this.order_view = function (order) {
-		console.log(order);
+	this.order_view = function (orderId) {
+		var order = g.orders[orderId];
 		$('#show-order-title').text('Order ' + order.id);
 		var address = order.address;
 		var info = order.name + "\n" + order.phone + "\n\n" + address.street + "\n" + address.city + " " +
@@ -174,22 +175,7 @@ var Events = new (function () {
 				info = info + "\n\n" + order.item;
 				break;
 		    case 'Bento':
-		    	var bento = order.item;
-		    	if (order.orderString != null && order.orderStringn != "") {
-		    		console.log(order.orderString);
-		    		info += "\n\n" + order.orderString.replace(/\\n/g, "\n");
-		    		break;
-		    	}
-		    	for (var i = 0; i < bento.length; i++) {
-		    		var box = bento[i];
-		    		info += "\n\nBENTO BOX " + (i+1) + "\n-----------\n";
-		    		var dishes = box.items;
-		    		for (var j = 0; j < dishes.length; j++) {
-		    			var dish = dishes[j];
-		    			info += dish.type + ': (' + dish.label + ') ' + dish.name + "\n";
-		    		}
-		    		info += "\n\n";
-		    	}
+		    	info += "\n\n" + constructBentoOrderString(order);
 		    	break;
 			default:
 				println('Error - Trying to render order of unsupported type' + order['@class']);
@@ -244,13 +230,48 @@ var Events = new (function () {
 	};
 
 	this.sendSms = function (orderId, msg) {
+		// Temporarily disable the submit button
+		$('#send-sms').prop('disabled', true);console.log('clicked!');
+		$('#show-order-feedback').html('Please wait');
 		$.getJSON(HOUSTON_URL + '/api/sms/send', { orderId: orderId, msg: msg, token: token }, function (res) {
 			if (res.code != 0) {
 				$('#show-order-feedback').html(res.msg);
 			} else {
 				$('#show-order-feedback').html('Success!');
 			}
+			$('#send-sms').prop('disabled', false);
 		});
 	};
 
+	this.updateOrder = function (orderId, order) {
+		// Replace
+		g.orders[orderId] = order;
+		// Remove marker from map
+        var marker = markers['order_' + orderId];
+        map.removeLayer(marker);
+        delete markers['order_' + orderId];
+        // Remove order
+        render_order(order);
+	}
+
 })();
+
+function constructBentoOrderString(order) {
+	if (order.orderString != null && order.orderString != "") {
+		return order.orderString.replace(/\\n/g, "\n");
+	} else {
+		var str = "";
+		var bento = order.item;
+		for (var i = 0; i < bento.length; i++) {
+		    var box = bento[i];
+		    str += "BENTO BOX " + (i+1) + "\n-----------\n";
+		    var dishes = box.items;
+		    for (var j = 0; j < dishes.length; j++) {
+		    	var dish = dishes[j];
+		    	str += dish.type + ': (' + dish.label + ') ' + dish.name + "\n";
+		    }
+		    str += "\n";
+		}
+		return str;
+	}
+}

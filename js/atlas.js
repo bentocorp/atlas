@@ -21,6 +21,7 @@ function refresh_status_symbol(order) {
 	}
 }
 
+// TODO - Since orders can now be modified, change parameter order to orderId
 function create_menu(items, order, driver) {
 	var menu = $('<div>').addClass('actions-menu').addClass('gone').append('<span class="menu-group">Actions</span>').mouseleave(function () { $(this).hide(); });
 	menu.attr('id', 'actions-menu_' + order.id);
@@ -30,7 +31,7 @@ function create_menu(items, order, driver) {
 		switch (action) {
 			case 'view-order':
 				el.html('View Order').click(function () {
-					Events.order_view(order);
+					Events.order_view(order.id);
 				});
 				break;
 			case 'text':
@@ -38,16 +39,19 @@ function create_menu(items, order, driver) {
 				break;
 			case 'unassign':
 				el.html('Unassign').click(function () {
-					Events.order_unassign(order);
+					Events.order_unassign(order.id);
 					$('#actions-menu_' + order.id).hide();
 				});
 				break;
 			case 'modify':
-				el.html('Modify').click(function () { });
+				el.html('Modify').click(function () {
+					prepare_modify_form(order.id);
+					$('#actions-menu_' + order.id).hide();
+				});
 				break;
 			case 'delete-order':
 				el.html('Cancel Order').click(function () {
-					Events.order_delete(order);
+					Events.order_delete(order.id);
 					$('#actions-menu_' + order.id).hide();
 				});
 				break;
@@ -62,10 +66,7 @@ function create_menu(items, order, driver) {
 	return menu;
 }
 
-function render_order(order) {
-	if ($('#order_' + order.id).length > 0) {
-		return;
-	}
+function create_order_div(order) {
 	/* Make actions menu */
 	var gearIcon = $('<img>').addClass('gear-icon').attr('src', 'img/gear.png').hide();
 	var menu = create_menu(['view-order', 'text', 'unassign', 'modify', 'delete-order'], order);
@@ -93,31 +94,44 @@ function render_order(order) {
 	var status = order.status.toLowerCase();
 	if ('complete' == status) {
 		menu.children('.action-unassign, .action-modify, .action-delete-order').hide();
-		var c = $('#' + order.driverId + '_orders-complete');
-		if (c.length > 0) {
-			c.append(o);
-		} else {
-			throw order.driverId + '_orders-complete not found for order ' + order.id;
-		}
 		// no drag-and-drop for completed orders
 		$('#driver_' + order.driverId + ' > .driver-header > .folding-symbol').removeClass('transparent');
 	} else if ('unassigned' == status) {
 		menu.children('.action-unassign').hide();
 		// dragging allowed but no repositioning (dropping) necessary for unassigned orders
 		o.attr('draggable', true).attr('ondragstart', 'Events.dragstart(event);').attr('ondragover', 'Events.dragover(event);').css('cursor', 'pointer');
-		$('#0_orders-pending').append(o);
 	} else {
 		o.attr('draggable', true).attr('ondragstart', 'Events.dragstart(event);').css('cursor', 'pointer');
-		var after = $('#' + order.driverId + '_orders-pending').children(':last');
-		if (!after.hasClass('order-dummy')) {
-			throw "Error - can't insert new order in " + order.driverId + '_orders-pending because dummy order was not found';
-		}
-		o.insertBefore(after);
 		$('#driver_' + order.driverId + ' > .driver-header > .folding-symbol').removeClass('transparent');
 		o.attr('ondragover' , 'Events.dragover(event);')
 		 .attr('ondragenter', 'Events.order_dragenter(event, "order");')
 		 .attr('ondragleave', 'Events.order_dragleave(event, "order");')
 		 .attr('ondrop'     , 'Events.order_ondrop(event);');
+	}
+	return o;
+}
+
+function render_order(order) {
+	var o = create_order_div(order);
+	var existing = $('#order_' + order.id);
+	var status = order.status.toLowerCase();
+	if (existing.length > 0) {
+		existing.replaceWith(o);
+	} else if ('complete' == status) {
+		var c = $('#' + order.driverId + '_orders-complete');
+		if (c.length > 0) {
+			c.append(o);
+		} else {
+			throw order.driverId + '_orders-complete not found for order ' + order.id;
+		}
+	} else if ('unassigned' == status) {
+		$('#0_orders-pending').append(o);
+	} else {
+		var after = $('#' + order.driverId + '_orders-pending').children(':last');
+		if (!after.hasClass('order-dummy')) {
+			throw "Error - can't insert new order in " + order.driverId + '_orders-pending because dummy order was not found';
+		}
+		o.insertBefore(after);
 	}
 	refresh_status_symbol(order);
 	// draw order on map if not complete
@@ -458,6 +472,10 @@ function connect() {
         			recolor(order);
         		} else if (type == 'delete') {
         			Order.delete(order.id);
+        		} else if (type == 'modify' && i < 0) {
+        			Events.updateOrder(order.id, order);
+        			println('Order ' + order.id + ' updated');
+                    fade($('#order_' + order.id), 500, [255, 255, 153, 1.0]);
         		}
         		break;
         	case 'order_status':
