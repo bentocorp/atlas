@@ -133,6 +133,7 @@ function render_order(order) {
 		}
 		o.insertBefore(after);
 		$("#" + order.driverId + "_orders").show();
+		$('#driver_' + order.driverId + ' > .driver-header > .folding-symbol').removeClass('collapsed').addClass('expanded');
 	}
 	refresh_status_symbol(order);
 	// draw order on map if not complete
