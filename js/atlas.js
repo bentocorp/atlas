@@ -81,14 +81,14 @@ function create_order_div(order) {
 		var marker = markers['order_' + order.id];
 		if (marker != null) {
 			//marker.setZIndexOffset(999);
-			marker.setIcon(mkIcon(order, 'large'));
+			marker.setIcon(mkIcon(order.id, 'large'));
 		}
 	}).mouseleave(function () {
 		gearIcon.hide();
 		var marker = markers['order_' + order.id];
 		if (marker != null) {
 			//marker.setZIndexOffset(998);
-			marker.setIcon(mkIcon(order, 'medium'));
+			marker.setIcon(mkIcon(order.id, 'medium'));
 		}
 	});
 	var status = order.status.toLowerCase();
@@ -463,13 +463,12 @@ function connect() {
         		} else if (type == 'assign') {
         			Order.move(order.id, action.driverId, action.after);
         			if (order.driverId != null && order.driverId > 0) {
-        				// TODO - Houston currently does not send order_status push notifications for 'pending'
-        				order.status = 'pending';
-        				g.orders[order.id].status = 'pending';
+        			    g.orders[order.id] = order;
         				if (i >= 0) {
         					Events.order_view(order.id);
         				}
         			}
+        			console.log(">>"+g.orders[order.id].status);
         			refresh_status_symbol(order);
         			recolor(order);
         		} else if (type == 'delete') {

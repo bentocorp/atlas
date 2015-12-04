@@ -65,7 +65,8 @@ function toLatLng(order, callback) {
     });
 }
 
-function mkIcon(order, size) {
+function mkIcon(orderId, size) {
+    var order = g.orders[orderId];
     return L.mapbox.marker.icon({
             'marker-symbol': order.id.split("-")[0],
             'marker-size': size,
