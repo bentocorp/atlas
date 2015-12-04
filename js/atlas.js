@@ -132,6 +132,7 @@ function render_order(order) {
 			throw "Error - can't insert new order in " + order.driverId + '_orders-pending because dummy order was not found';
 		}
 		o.insertBefore(after);
+		$("#" + order.driverId + "_orders").show();
 	}
 	refresh_status_symbol(order);
 	// draw order on map if not complete
@@ -182,7 +183,8 @@ function render_driver(driver) {
 	});
 	// orders
 	var _mkOrderStatusHeader = function (divId, text) {
-		var hide = $('<span>').addClass('hide').html('Hide').click(function () {
+		var label = (text == 'Complete') ? 'Show' : 'Hide';
+		var hide = $('<span>').addClass('hide').html(label).click(function () {
 			$('#' + divId).toggle();
 			if ($('#' + divId).is(':visible')) {
 				hide.html('Hide');
@@ -196,7 +198,7 @@ function render_driver(driver) {
 		.append(_mkOrderStatusHeader(driver.id + '_orders-pending', 'Pending'))
 		.append('<div id="' + driver.id + '_orders-pending"></div>')
 		.append(_mkOrderStatusHeader(driver.id + '_orders-complete', 'Complete'))
-		.append('<div id="' + driver.id + '_orders-complete"></div>');
+		.append('<div id="' + driver.id + '_orders-complete" style="display: none;"></div>');
 	// Initialize order container with a dummy order (for drag and drop)
 	orders.children('#' + driver.id + '_orders-pending').append(
 	  '<div id="dummy_'+ driver.id + '" class="order order-dummy" priority="-1" ondragover="Events.dragover(event);" ondragenter="Events.order_dragenter(event);" ondragleave="Events.order_dragleave(event);" ondrop="Events.dummy_ondrop(event);"></div>'
@@ -465,7 +467,7 @@ function connect() {
         				order.status = 'pending';
         				g.orders[order.id].status = 'pending';
         				if (i >= 0) {
-        					Events.order_view(order);
+        					Events.order_view(order.id);
         				}
         			}
         			refresh_status_symbol(order);

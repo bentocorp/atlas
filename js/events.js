@@ -264,11 +264,11 @@ function constructBentoOrderString(order) {
 		var bento = order.item;
 		for (var i = 0; i < bento.length; i++) {
 		    var box = bento[i];
-		    str += "BENTO BOX " + (i+1) + "\n-----------\n";
+		    str += "BENTO BOX " + (i+1) + "\n=========================\n";
 		    var dishes = box.items;
 		    for (var j = 0; j < dishes.length; j++) {
 		    	var dish = dishes[j];
-		    	str += dish.type + ': (' + dish.label + ') ' + dish.name + "\n";
+		    	str += dish.type + ':\t(' + dish.label + ')\t' + dish.name + "\n";
 		    }
 		    str += "\n";
 		}
