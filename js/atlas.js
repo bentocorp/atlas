@@ -396,7 +396,7 @@ function connect() {
         var msg = "Location update for client " + clientId + ": (" + e.lat + ", " + e.lng + ")";
         //println(msg);
         var p = [e.lat, e.lng];
-        console.log(g.drivers[clientId].name + "-" + p);
+        console.log(g.drivers[clientId].name + " @ " + p);
         if (markers['driver_' + clientId] == null) {
           console.log('Adding to map');
           markers['driver_'+clientId] = L.marker(p, {
