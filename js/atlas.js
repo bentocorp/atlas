@@ -366,6 +366,11 @@ function connect() {
     	//console.log(push);
     	var clientId = parseInt(push.clientId.split("-")[1]);
     	var driver = $('#driver_' + clientId);
+    	if (g.drivers[clientId] == null) {
+    		// This can happen if we receive push notifications before we finish processing data from Houston
+    		console.log('Error - g.drivers[' + clientId + '] == null');
+    		return;
+    	}
     	if (push.status == 'connected') {
     		g.drivers[clientId].status='ONLINE';
     		$('#online-drivers').append(driver);
