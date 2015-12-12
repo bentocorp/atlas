@@ -448,6 +448,11 @@ function connect() {
         }
         */
         switch (subject) {
+        	case 'sse_update':
+        		var sse = push.body;
+        		console.log('SSE=' + sse);
+        		$('#sse').html('SSE: ' + sse + 'm');
+        		break;
         	case 'order_action':
         		var action = push.body;console.log(action);
         		var type = action.type.toLowerCase();

@@ -181,9 +181,10 @@ var Events = new (function () {
 				println('Error - Trying to render order of unsupported type' + order['@class']);
 				return;
 		}
+		info = info + "\n\nNotes for driver:\n" + order.notes;
 		$('#show-order-textarea').val(info);
 		var first = order.name.split(" ")[0];
-		var dyfault = 'Hi ' + first + ",\nThanks for ordering Bento! Your order should arrive in about 20 minutes. We'll message you once your order is on its way.";
+		var dyfault = 'Hi ' + first + ",\nThanks for ordering Bento! Your order should arrive in about 20-30 minutes. We'll message you once your order is on its way.";
 		$('#sms-textarea').val(dyfault);
 		$('#show-order-feedback').html('');
 		$('#send-sms').attr("onclick", "Events.sendSms('" + order.id + "', $('#sms-textarea').val());");
