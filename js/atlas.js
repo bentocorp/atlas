@@ -228,6 +228,7 @@ var g = {
 
 var token;
 var clientId;
+var simpleSystemEta=15;
 
 function clear() {
 	g.drivers = { };
@@ -455,6 +456,7 @@ function connect() {
         		var sse = push.body;
         		console.log('SSE=' + sse);
         		$('#sse').html('SSE: ' + sse + 'm');
+        		simpleSystemEta = sse;
         		break;
         	case 'order_action':
         		var action = push.body;console.log(action);

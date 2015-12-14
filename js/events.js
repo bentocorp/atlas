@@ -184,7 +184,9 @@ var Events = new (function () {
 		info = info + "\n\nNotes for driver:\n" + order.notes;
 		$('#show-order-textarea').val(info);
 		var first = order.name.split(" ")[0];
-		var dyfault = 'Hi ' + first + ",\nThanks for ordering Bento! Your order should arrive in about 20-30 minutes. We'll message you once your order is on its way.";
+		var lowerEta = simpleSystemEta;
+		var upperEta = simpleSystemEta + 10;
+		var dyfault = 'Hi ' + first + ",\nThanks for ordering Bento! Your order should arrive in about " + lowerEta + "-" + upperEta + " minutes. We'll message you once your order is on its way.";
 		$('#sms-textarea').val(dyfault);
 		$('#show-order-feedback').html('');
 		$('#send-sms').attr("onclick", "Events.sendSms('" + order.id + "', $('#sms-textarea').val());");
