@@ -240,8 +240,8 @@ var Events = new (function () {
 			} else {
 				$('#show-order-feedback').html('Success!');
 			}
-		}).fail(function (err) {
-			$('#show-order-feedback').html(err);
+		}).fail(function () {
+			$('#show-order-feedback').html('Unable to send SMS. Are you connected to the Internet?');
 		}).always(function() {
 			$('#send-sms').prop('disabled', false);
   		});
