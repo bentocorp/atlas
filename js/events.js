@@ -232,7 +232,7 @@ var Events = new (function () {
 
 	this.sendSms = function (orderId, msg) {
 		// Temporarily disable the submit button
-		$('#send-sms').prop('disabled', true);console.log('clicked!');
+		$('#send-sms').prop('disabled', true);
 		$('#show-order-feedback').html('Please wait');
 		$.getJSON(HOUSTON_URL + '/api/sms/send', { orderId: orderId, msg: msg, token: token }, function (res) {
 			if (res.code != 0) {
@@ -240,8 +240,11 @@ var Events = new (function () {
 			} else {
 				$('#show-order-feedback').html('Success!');
 			}
+		}).fail(function (err) {
+			$('#show-order-feedback').html(err);
+		}).always(function() {
 			$('#send-sms').prop('disabled', false);
-		});
+  		});
 	};
 
 	this.updateOrder = function (orderId, order) {

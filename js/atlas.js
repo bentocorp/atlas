@@ -425,11 +425,14 @@ function connect() {
       });
 
     soc.on('push', function (data) {
-        var push = JSON.parse(data);console.log(push);
+        var push = JSON.parse(data);
         var subject = push.subject.toLowerCase();
         
         var i = rids.indexOf(push.rid); // rids from events.js
-        console.log('push.rid=' + push.rid + ', i=' + i); console.log(rids);
+        if (push.subject != 'sse_update') {
+        	console.log(push);
+        	console.log('push.rid=' + push.rid + ', i=' + i); console.log(rids);
+        }
         if (i >= 0) {
         	rids.splice(i, 1);
         	if (rids.length <= 0) {
