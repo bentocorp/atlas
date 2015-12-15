@@ -69,7 +69,7 @@ function create_menu(items, order, driver) {
 function create_order_div(order) {
 	/* Make actions menu */
 	var gearIcon = $('<img>').addClass('gear-icon').attr('src', 'img/gear.png').hide();
-	var menu = create_menu(['view-order', 'text', 'unassign', 'modify', 'delete-order'], order);
+	var menu = create_menu(['view-order', /*'text',*/ 'unassign', 'modify', 'delete-order'], order);
 	var actions = $('<span>').addClass('actions').append(menu).append(gearIcon);
 	gearIcon.click(function () { $(this).hide(); menu.show(); });
 	var o = $('<div>').attr('id', 'order_' + order.id).attr('order-id', order.id).addClass('order')
@@ -523,7 +523,6 @@ function connect() {
         			}
         			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').hide();
         			$('#order_' + order.id + '> .actions > .actions-menu > .action-delete-order').hide();
-        			$('#order_' + order.id + '> .actions > .actions-menu > .action-modify').hide();
         		} else {
         			recolor(order);
         		}
