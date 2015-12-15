@@ -229,6 +229,11 @@ var g = {
 var token;
 var clientId;
 var simpleSystemEta=15;
+var metrics = { bentos: 0 };
+
+function update_metrics() {
+	$('#bento-count').html('Bentos: ' + metrics.bentos);
+}
 
 function clear() {
 	g.drivers = { };
@@ -240,6 +245,7 @@ function clear() {
 		}
 	});
 	markers = { };
+	metrics.bentos = 0;
 }
 
 
@@ -287,6 +293,7 @@ function init() {
        							}
        							render_order(order);
 								delete orders[order.id];
+								if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.length; }
        						}
        					}
        				}
@@ -301,11 +308,13 @@ function init() {
 								g['orders'][key] = orders[key];
 								render_order(orders[key]);
 							}
+							if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.length; }
 						}
 					}
 					println('Fetched ' + orderCnt + ' orders')
 					// UTC timestamp
 					readyTs = new Date().getTime();
+					update_metrics();
 					busy(false);
 				}
 			});
@@ -476,6 +485,8 @@ function connect() {
         			}
         			render_order(order);
         			g.orders[order.id] = order;
+        			if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.length; }
+        			update_metrics();
         		} else if (type == 'assign') {
         			Order.move(order.id, action.driverId, action.after);
         			if (order.driverId != null && order.driverId > 0) {
