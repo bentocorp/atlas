@@ -308,7 +308,7 @@ function init() {
 								g['orders'][key] = orders[key];
 								render_order(orders[key]);
 							}
-							if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.length; }
+							if (orders[key].id.split("-")[0] == "o") { metrics.bentos += orders[key].item.length; }
 						}
 					}
 					println('Fetched ' + orderCnt + ' orders')
