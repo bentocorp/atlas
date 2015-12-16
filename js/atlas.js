@@ -500,6 +500,8 @@ function connect() {
         			recolor(order);
         		} else if (type == 'delete') {
         			Order.delete(order.id);
+        			if (order.id.split("-")[0] == "o") { metrics.bentos -= order.item.length; }
+        			update_metrics();
         		} else if (type == 'modify' && i < 0) {
         			Events.updateOrder(order.id, order);
         			println('Order ' + order.id + ' updated');
