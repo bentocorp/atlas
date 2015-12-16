@@ -536,6 +536,7 @@ function connect() {
         			}
         			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').hide();
         			$('#order_' + order.id + '> .actions > .actions-menu > .action-delete-order').hide();
+        			$('#order_' + order.id + '> .actions > .actions-menu > .action-modify').hide();
         		} else {
         			recolor(order);
         		}

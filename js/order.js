@@ -95,7 +95,7 @@ var Order = new (function () {
 			$('#driver_' + driverId + ' > .driver-header > .folding-symbol').removeClass('collapsed').addClass('expanded').removeClass('transparent');
 			$('#' + driverId + '_orders').show();
 			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').show();
-			$('#order_' + order.id + '> .actions > .actions-menu > .action-modify').hide();
+			$('#order_' + order.id + '> .actions > .actions-menu > .action-modify').show();
 			// }}
 		}
 	};
