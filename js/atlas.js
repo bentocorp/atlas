@@ -229,10 +229,16 @@ var g = {
 var token;
 var clientId;
 var simpleSystemEta=15;
-var metrics = { bentos: 0 };
+var metrics = { bentos: 0, addons: 0 };
+var bentoBoxFilter = function (o) { return o.item_type == 'CustomerBentoBox'; };
+var countAddOns = function (order) {
+	// This will return 0 until we support reloading add-ons from the database in Houston
+	return order.item.filter(function (o) { return o.item_type == 'AddonList' }).map(function (o) { return o.items.length; }).reduce(function (a, b) { return a + b; }, 0);
+};
 
 function update_metrics() {
 	$('#bento-count').html('Bentos: ' + metrics.bentos);
+	$('#addon-count').html('Add-ons: ' + metrics.addons)
 }
 
 function clear() {
@@ -246,6 +252,7 @@ function clear() {
 	});
 	markers = { };
 	metrics.bentos = 0;
+	metrics.addons = 0;
 }
 
 
@@ -293,7 +300,7 @@ function init() {
        							}
        							render_order(order);
 								delete orders[order.id];
-								if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.length; }
+								if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
        						}
        					}
        				}
@@ -308,7 +315,7 @@ function init() {
 								g['orders'][key] = orders[key];
 								render_order(orders[key]);
 							}
-							if (orders[key].id.split("-")[0] == "o") { metrics.bentos += orders[key].item.length; }
+							if (orders[key].id.split("-")[0] == "o") { metrics.bentos += orders[key].item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(orders[key]); }
 						}
 					}
 					println('Fetched ' + orderCnt + ' orders')
@@ -485,7 +492,7 @@ function connect() {
         			}
         			render_order(order);
         			g.orders[order.id] = order;
-        			if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.length; }
+        			if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
         			update_metrics();
         		} else if (type == 'assign') {
         			Order.move(order.id, action.driverId, action.after);
@@ -500,7 +507,7 @@ function connect() {
         			recolor(order);
         		} else if (type == 'delete') {
         			Order.delete(order.id);
-        			if (order.id.split("-")[0] == "o") { metrics.bentos -= order.item.length; }
+        			if (order.id.split("-")[0] == "o") { metrics.bentos -= order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
         			update_metrics();
         		} else if (type == 'modify' && i < 0) {
         			Events.updateOrder(order.id, order);
