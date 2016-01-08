@@ -9,9 +9,11 @@ var Order = new (function () {
 		}
 		delete g.orders[orderId];
 		var marker = markers['order_' + orderId];
+		$('#order_' + orderId).remove();
+		// removeLayer() will throw an Exception here if the marker does not exist
+		// This can occur because we do not render the orders of offline drivers (which we should do)
 		map.removeLayer(markers['order_' + orderId]);
 		delete markers['order_' + orderId];
-		$('#order_' + orderId).remove();
 	};
 	this.move = function (orderId, driverId, afterId) {
 		orderId = String(orderId); driverId = (driverId == null) ? -1 : parseInt(driverId);
