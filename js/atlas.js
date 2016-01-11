@@ -125,7 +125,7 @@ function render_order(order) {
 			throw order.driverId + '_orders-complete not found for order ' + order.id;
 		}
 	} else if ('unassigned' == status) {
-		$('#0_orders-pending').append(o);
+		$('#0_orders-pending').prepend(o);
 	} else {
 		var after = $('#' + order.driverId + '_orders-pending').children(':last');
 		if (!after.hasClass('order-dummy')) {
