@@ -21,6 +21,32 @@ function refresh_status_symbol(order) {
 	}
 }
 
+function create_driver_menu(items, driver) {
+	var menu = $('<div>').addClass('actions-menu').addClass('gone').append('<span class="menu-group">Actions</span>').mouseleave(function () { $(this).hide(); });
+	menu.attr('id', 'driver-actions-menu_' + driver.id);
+	for (var i = 0; i < items.length; i++) {
+		var el = $('<div>').addClass('menu-item');
+		var action = items[i];
+		if        (action == 'shift-on-demand') {
+			el.html('Move to On-Demand')
+			  .click(function () { setDriverShift(driver.id, 1); });
+		} else if (action == 'shift-order-ahead') {
+			el.html('Move to Order Ahead')
+			  .click(function () { setDriverShift(driver.id, 2); });
+		} else if (action == 'shift-off') {
+            el.html('Take off shift')
+              .click(function () { setDriverShift(driver.id, 0); });
+		} else {
+			throw 'Error - create_driver_menu(items=' + items + ',driver=' + driver + ') - Menu item ' + action + ' not recognized';
+		}
+		el.addClass('action-' + action)
+          .mouseenter(function () { $(this).toggleClass('menu-select'); })
+          .mouseleave(function () { $(this).toggleClass('menu-select'); });
+		menu.append(el);
+	}
+	return menu;
+}
+
 // TODO - Since orders can now be modified, change parameter order to orderId
 function create_menu(items, order, driver) {
 	var menu = $('<div>').addClass('actions-menu').addClass('gone').append('<span class="menu-group">Actions</span>').mouseleave(function () { $(this).hide(); });
@@ -72,10 +98,21 @@ function create_order_div(order) {
 	var menu = create_menu(['view-order', /*'text',*/ 'unassign', 'modify', 'delete-order'], order);
 	var actions = $('<span>').addClass('actions').append(menu).append(gearIcon);
 	gearIcon.click(function () { $(this).hide(); menu.show(); });
+	// Helper function to prepend zeros
+	var pz  = function (str) {
+		return (String(str).length == 1) ? '0' + str : str;
+	};
+	var swt = ''; // Scheduled window text
+	if (order.isOrderAhead) {
+		var s = new Date(order.scheduledWindowStart);
+		var e = new Date(order.scheduledWindowEnd  );
+		swt = pz(s.getHours()) + ':' + pz(s.getMinutes()) + '-' + pz(e.getHours()) + ':' + pz(e.getMinutes()); 
+	}
 	var o = $('<div>').attr('id', 'order_' + order.id).attr('order-id', order.id).addClass('order')
 		.append('<span class="order-status-symbol modified hidden"></span>')
 		.append('<span class="order-address">' + order.address.street + '</span>')
-		.append('<span class="order-name">' + order.name + '</span>').append(actions);
+		.append('<span class="order-name">' + order.name + '</span>')
+		.append('<span class="scheduled-window">' + swt + '</span>').append(actions);
 	o.mouseenter(function () {
 		gearIcon.show();
 		var marker = markers['order_' + order.id];
@@ -125,7 +162,12 @@ function render_order(order) {
 			throw order.driverId + '_orders-complete not found for order ' + order.id;
 		}
 	} else if ('unassigned' == status) {
-		$('#0_orders-pending').prepend(o);
+		if (!order.isOrderAhead) {
+			$('#0_orders-pending').prepend(o)
+		} else {
+			// console.log(order);
+			$('#order-ahead-0_orders-pending').append(o);
+		}
 	} else {
 		var after = $('#' + order.driverId + '_orders-pending').children(':last');
 		if (!after.hasClass('order-dummy')) {
@@ -138,7 +180,8 @@ function render_order(order) {
 	refresh_status_symbol(order);
 	// draw order on map if not complete
 	var driver = g.drivers[order.driverId];
-	if ('complete' != status && ((driver != null && driver.status=='ONLINE') || order.driverId <= 0)) {
+	console.log(order);
+	if ('complete' != status /*&& ((driver != null && driver.status=='ONLINE') || order.driverId <= 0)*/) {
 		addOrderToMap(order);
 	}
 }
@@ -156,15 +199,16 @@ function render_driver(driver) {
 	});
 	var status = driver.status.toLowerCase();
 	var gearIcon = $('<img>').addClass('gear-icon').attr('src', 'img/gear.png').hide();
-	var menu = $('<div>').addClass('actions-menu').addClass('hidden');
+	var menu = create_driver_menu(['shift-on-demand', 'shift-order-ahead', 'shift-off'], driver);
 	var actions = $('<span>').addClass('actions').append(menu).append(gearIcon);
+	gearIcon.click(function () { $(this).hide(); menu.show(); });
 	var driverHeader = $('<div>').addClass('driver-header')
 	  	.append(fold)
 	  	.append('<span class="status-symbol ' + status + '"></span>')
 	  	.append('<span driver-id="'+driver.id+'" class="driver-name" ondragover="Events.dragover(event);" ondragenter="Events.driver_dragenter(event);" ondragleave="Events.driver_dragleave(event);" ondrop="Events.driver_ondrop(event);">' + driver.name + '</span>')
 	  	.append(actions);
 	driverHeader.mouseenter(function () { 
-		gearIcon.toggle();
+		gearIcon.show();
 		var marker = markers['driver_' + driver.id];
 		if (marker != null) {
 			marker.setIcon(L.icon({
@@ -173,7 +217,7 @@ function render_driver(driver) {
         	}));
 		}
 	}).mouseleave(function () {
-		gearIcon.toggle();
+		gearIcon.hide();
 		var marker = markers['driver_' + driver.id];
 		if (marker != null) {
 			marker.setIcon(L.icon({
@@ -207,12 +251,33 @@ function render_driver(driver) {
 
 	// Add driver and order to driver-container
 	container.append(driverHeader).append(orders);
-	if (status == 'online') {
-		$('#online-drivers').append(container);
-	} else if (status == 'offline') {
+	var shift = driver.shiftType;
+	if        (shift == 0) { 
 		$('#offline-drivers').append(container);
+	} else if (shift == 1) {
+		$('#online-drivers').append(container);
+	} else if (shift == 2) {
+		$('#order-ahead-scheduled').append(container);
 	} else {
-		console.log('Encountered unsupported status while rendering driver ' + driver.id + ' - ' + status);
+		println('Error - render_driver(driver=' + driver + ') - Encountered unsupported status (' + status + ') while rendering driver ' + driver.id);
+	}
+	update_driver_menu(driver);
+}
+
+function update_driver_menu(driver) {
+	var menu = $('#driver-actions-menu_' + driver.id);
+	var items = menu.find('.menu-item');
+	items.show();
+	var shift = driver.shiftType;
+	if        (shift == 0) {
+		menu.find('.action-shift-off')
+		    .hide();
+	} else if (shift == 1) {
+		menu.find('.action-shift-on-demand')
+		    .hide();
+	} else if (shift == 2) {
+		menu.find('.action-shift-order-ahead')
+		    .hide();
 	}
 }
 
@@ -244,7 +309,7 @@ function update_metrics() {
 function clear() {
 	g.drivers = { };
 	g['orders'] = { };
-	$('#0_orders-pending, #online-drivers, #offline-drivers').html('');
+	$('#0_orders-pending, #online-drivers, #offline-drivers, #order-ahead-0_orders-pending, #order-ahead-scheduled').html('');
 	map.eachLayer(function (layer) {
 		if (layer instanceof L.Marker) {
 			map.removeLayer(layer);
@@ -259,7 +324,20 @@ function clear() {
 function init() {
 	busy(true);
 	clear();
+	$.getJSON(HOUSTON_URL + '/api/routific/getMostRecentJob', { token: token }).done(function (res) {
+		if (res.code != 0) {
+			println('Error - init() - ' + res.ret);
+			$('#order-ahead-msg').html('Error');
+		} else {
+			var job = res.ret;
+			set_routific_info(job);
+			next();
+		}
+	}).fail(function( jqxhr, textStatus, error ) {
+		console.log(error);
+	});
 	// First, get drivers
+	var next = function () {
 	$.getJSON(HOUSTON_URL + '/api/driver/getAll', { token: token }).done(function (res) {
     	if (res.code != 0) {
        		println('Error fetching driver data from houston - ' + res.msg);
@@ -272,6 +350,20 @@ function init() {
 					println('Error fetching orders from houston - ' + res.msg);
 				} else {
 					var orders = res.ret;
+					// For now, Houston loads into memory all orders scheduled for delivery for the entire day (lunch & dinner)
+					// Remove Order Ahead orders that are "unassigned" and not part of this shift
+					var unassigned = 0;
+					var shift = $('#order-ahead-shift option:selected').val();
+					for (var key in orders) {
+						if (orders.hasOwnProperty(key) && orders[key].isOrderAhead && orders[key].status.toLowerCase() == 'unassigned') {
+							if (orders[key].shift != shift) {
+								delete orders[key];
+							} else {
+								unassigned++;
+							}
+						} 
+					}
+					$('#order-ahead-msg').html('Got ' + unassigned + ' unassigned orders');
 					var orderCnt = 0;
        				for (var i = 0; i < drivers.length; i++) {
        					var driver = drivers[i];
@@ -291,7 +383,11 @@ function init() {
        						var order = orders[q[j]];
        						//order.priority = j; // XXX: This will be used by the front-end to help with reprioritizing orders
        						if (order == null) {
-       							println('Error - order ' + q[j] + ' not found for driver ' + driver.id);
+       							println(
+       								'Error - init() - Order ' + q[j] + ' is in queue of ' + driver.id + ' but was returned by Houston. ' +
+       								'This order may be outdated but is still in the "open" state. Did you remember to clear all open ' +
+       								'orders from yesterday?'
+       							);
        						} else {
        							orderCnt++;
        							g['orders'][order.id] = order;
@@ -322,13 +418,15 @@ function init() {
 					// UTC timestamp
 					readyTs = new Date().getTime();
 					update_metrics();
+					$('#console').show(); $('#side-pane').show(); $('#order-ahead-side-pane').show();
 					busy(false);
 				}
 			});
        	}
     }).fail(function (jqxhr, textStatus, error) {
-		println('ERROR - Problem connecting to ' + HOUSTON_URL);
-	});
+    	println('Network error - Problem connecting to ' + HOUSTON_URL);
+    });
+	};
 }
 
 var soc;
@@ -468,6 +566,20 @@ function connect() {
         }
         */
         switch (subject) {
+        	case 'driver_shift':
+        		var driver = push.body;
+        		var d = $('#driver_' + driver.id).detach();
+        		if        (driver.shiftType == 0) {
+        			$('#offline-drivers').append(d);
+        		} else if (driver.shiftType == 1) {
+					$('#online-drivers').append(d);
+        		} else if (driver.shiftType == 2) {
+					$('#order-ahead-scheduled').append(d);
+        		} else {
+        			console.log('Error - soc.on(push = ' + push + ') - Unrecognized shift type');
+        		}
+        		update_driver_menu(driver);
+        		break;
         	case 'sse_update':
         		var sse = push.body;
         		console.log('SSE=' + sse);

@@ -1,5 +1,5 @@
 body { margin: 0; padding: 0; }
-#side-pane {
+.side-pane {
      background-color: #c5e3a8; border-left: 2px solid #beb8b2; font: 7pt Arial; color: #444444;
 }
 .driver-container { border-top: 1px solid #b6dc92; }
@@ -24,8 +24,9 @@ body { margin: 0; padding: 0; }
 .pending  { color: #8467d7; border: 1px solid #8467d7; background-color: #cec2ef; }
 .modified { color: #c3bf2b; border: 1px solid #c3bf2b; background-color: #fffb67; }
 .rejected { color: #ab3835; border: 1px solid #ab3835; background-color: #e77471; }
-.order-address { display: inline-block; vertical-align: middle; overflow: hidden; width: 81px; white-space: nowrap; margin-right: 9px; }
-.order-name { display: inline-block; vertical-align: middle; overflow: hidden; width: 90px; white-space: nowrap; }
+.order-address { display: inline-block; vertical-align: middle; overflow: hidden; width: 80px; white-space: nowrap; margin-right: 9px; }
+.order-name { display: inline-block; vertical-align: middle; overflow: hidden; width: 85px; white-space: nowrap; margin-right: 9px;}
+.scheduled-window { display: inline-block; vertical-align: middle; overflow: hidden; width: 52px; white-space: nowrap; }
 .order-dummy { border-top: 2px solid transparent; padding-bottom: 0; padding-top: 0; }
 .order-drag-enter { border-top: 2px solid rgba(255, 255, 204, 0.5) }
 .driver-header-drag-enter { background-color: rgba(255, 255, 204, 0.5); }
@@ -120,3 +121,8 @@ select:not([multiple]) {
 .textfield-disabled {
      color: #778877;
 }
+
+#ui-datepicker-div { font: 7pt Arial; }
+
+.order-ahead-error { color: #a00000; }
+.order-ahead-action{ vertical-align: middle; text-decoration: underline; cursor: pointer; }
