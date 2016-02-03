@@ -9,6 +9,7 @@ function get_order_color(status) {
         case 'pending'   : return '#8467d7';
         case 'unassigned': return '#bbbbbb';
         case 'modified'  : return '#fffb67';
+        case 'arrived'   :
 		case 'accepted'  : return '#0066cc'; // blue
 		case 'rejected'  : return '#cc0000'; // red
 		case 'complete'  : return '#339900'; // green

@@ -3,7 +3,7 @@ function set_routific_info(job) {
   $('#order-ahead-date-picker').val(job.date);
   $('#order-ahead-shift').val(job.shift);
   if (job.jobId == null) {
-    $('#routific-info').html('No data for date=' + job.date + ', shift=' + job.shift_string);
+    $('#routific-info').html('No routing data for the selected date (' + job.date + ') and shift (' + job.shift_string + ')');
   } else {
     var unserved = job.output.num_unserved;
     var html  = 'Latest: ' + String(job.time) + ', ';
@@ -126,6 +126,7 @@ var routific = new (function () {
                   pending = false;
                   var job = res.ret;
                   set_routific_info(job);
+                  $('#order-ahead-msg').html('Finished routing');
                 }
               }
             });
@@ -184,6 +185,7 @@ function get_OA_orders() {
           // Finally, render the new orders
           var orders = res.ret;
        		$('#order-ahead-msg').html('Got ' + orders.length + ' unassigned orders').attr('class', '');
+          console.log(orders);
           for (var i = 0; i < orders.length; i++) {
             var order = orders[i];
             g['orders'][order.id] = order;

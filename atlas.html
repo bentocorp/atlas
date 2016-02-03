@@ -295,6 +295,19 @@
     </div>
 
     <script type="text/javascript">
+        function reportError(msg) {
+            $.getJSON(HOUSTON_URL + '/admin/reportAtlasException', { token: token, html: msg }).done(function (res) {
+                if (res.code != 0) {
+                    println('Error - init() - ' + res.ret);
+                }
+            }).fail(function( jqxhr, textStatus, error ) {
+                println(error);
+            });
+            alert(msg);
+        }
+window.onerror = function (errorMsg, url, lineNumber) {
+    reportError('Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber);
+}
         $('#console').hide(); $('#side-pane').hide(); $('#order-ahead-side-pane').hide();
         // Keyboard shortcuts
         $(document).keypress(function(e) {
@@ -505,6 +518,7 @@
         function reset_form() {
             $('#p-title-create').hide();
             $('#p-title-modify').hide();
+            $('#p-feedback-msg').html('');
             $('#p-first-name').val('').prop('disabled', false).removeClass('textfield-disabled');
             $('#p-last-name').val('').prop('disabled', false).removeClass('textfield-disabled');
             $('#p-phone').val('');

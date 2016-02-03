@@ -7,6 +7,7 @@ function refresh_status_symbol(order) {
 			case 'unassigned': symbol.html('N'); break;
 			case 'rejected': symbol.html('&#x2715;'); break;
 			case 'modified': symbol.html('!'); break;
+			case 'arrived' :
 			case 'accepted': symbol.html('&#x2691;'); break;
 			case 'complete':
 				symbol.html('&#x2713;');
@@ -171,7 +172,8 @@ function render_order(order) {
 	} else {
 		var after = $('#' + order.driverId + '_orders-pending').children(':last');
 		if (!after.hasClass('order-dummy')) {
-			throw "Error - can't insert new order in " + order.driverId + '_orders-pending because dummy order was not found';
+			reportError("Error - can't insert new order " + order.id + " in " + order.driverId + '_orders-pending because dummy order was not found');
+			return;
 		}
 		o.insertBefore(after);
 		$("#" + order.driverId + "_orders").show();
@@ -383,7 +385,7 @@ function init() {
        						//order.priority = j; // XXX: This will be used by the front-end to help with reprioritizing orders
        						if (order == null) {
        							println(
-       								'Error - init() - Order ' + q[j] + ' is in queue of ' + driver.id + ' but was returned by Houston. ' +
+       								'Error - init() - Order ' + q[j] + ' is in queue of ' + driver.id + ' but was not returned by Houston. ' +
        								'This order may be outdated but is still in the "open" state. Did you remember to clear all open ' +
        								'orders from yesterday?'
        							);
@@ -410,7 +412,7 @@ function init() {
 								g['orders'][key] = orders[key];
 								render_order(orders[key]);
 							}
-							if (orders[key].id.split("-")[0] == "o" && !order.isOrderAhead) { metrics.bentos += orders[key].item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(orders[key]); }
+							if (orders[key].id.split("-")[0] == "o" && !orders[key].isOrderAhead) { metrics.bentos += orders[key].item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(orders[key]); }
 						}
 					}
 					println('Fetched ' + orderCnt + ' orders')
@@ -423,7 +425,7 @@ function init() {
 			});
        	}
     }).fail(function (jqxhr, textStatus, error) {
-    	println('Network error - Problem connecting to ' + HOUSTON_URL);
+    	console.log('Network error - Problem connecting to ' + HOUSTON_URL + ' - ' + error);
     });
 	};
 }
@@ -487,11 +489,9 @@ function connect() {
     	}
     	if (push.status == 'connected') {
     		g.drivers[clientId].status='ONLINE';
-    		$('#online-drivers').append(driver);
     		driver.children('.driver-header').children('.status-symbol').removeClass('offline').addClass('online');
     	} else if (push.status == 'disconnected') {
     		g.drivers[clientId].status='OFFLINE';
-    		$('#offline-drivers').append(driver);
     		driver.children('.driver-header').children('.status-symbol').removeClass('online').addClass('offline');
     		if (markers['driver_' + clientId] != null) {
     			map.removeLayer(markers['driver_' + clientId]);
@@ -601,6 +601,15 @@ function connect() {
         					println('Error - new order assigned to non-existent driver ' + order.driverId);
         				}
         			}
+        			var oa_date = $('#order-ahead-date-picker').val();
+        			var oa_shift= $('#order-ahead-shift option:selected').val();
+        			if (order.isOrderAhead && (order.date != oa_date || String(order.shift) != oa_shift)) {
+        				return;
+        			} else {
+        				console.log("creating oa order");
+        				console.log(order);
+        				console.log('order.date != ' + oa_date + ', String(order.shift) != ' + oa_shift);
+        			}
         			render_order(order);
         			g.orders[order.id] = order;
         			if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
@@ -631,6 +640,8 @@ function connect() {
         		console.log(body.orderId + ', ' + body.status);
         		var order = g.orders[body.orderId];
         		if (order == undefined) {
+        			// If someone else assigns an order ahead order from a different date/shift, that order won't
+        			// exist here; must handle this case properly
         			console.log(g.orders);
         		}
         		order.status = body.status;

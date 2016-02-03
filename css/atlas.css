@@ -19,7 +19,7 @@ body { margin: 0; padding: 0; }
 .order  { padding-top: 1px; padding-bottom: 1px; border-top: 2px solid transparent; }
 .order-status-symbol { display: inline-block; vertical-align: middle; width: 10px; height: 10px; border: 1px solid transparent; text-align: center; font: 7pt Arial; font-weight: bold; margin-left: 3px; margin-right: 3px; }
 .unassigned { color: #666666; border: 1px solid #666666; background-color: #bbbbbb; }
-.accepted { color: #2e7dc4; border: 1px solid #2e7dc4; background-color: #74c3ff; }
+.accepted, .arrived { color: #2e7dc4; border: 1px solid #2e7dc4; background-color: #74c3ff; }
 .complete { color: #2c820e; border: 1px solid #2c820e; background-color: #90e672; }
 .pending  { color: #8467d7; border: 1px solid #8467d7; background-color: #cec2ef; }
 .modified { color: #c3bf2b; border: 1px solid #c3bf2b; background-color: #fffb67; }
