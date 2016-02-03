@@ -180,7 +180,6 @@ function render_order(order) {
 	refresh_status_symbol(order);
 	// draw order on map if not complete
 	var driver = g.drivers[order.driverId];
-	console.log(order);
 	if ('complete' != status /*&& ((driver != null && driver.status=='ONLINE') || order.driverId <= 0)*/) {
 		addOrderToMap(order);
 	}
