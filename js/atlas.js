@@ -395,7 +395,7 @@ function init() {
        							}
        							render_order(order);
 								delete orders[order.id];
-								if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
+								if (order.id.split("-")[0] == "o" && !order.isOrderAhead) { metrics.bentos += order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
        						}
        					}
        				}
@@ -410,7 +410,7 @@ function init() {
 								g['orders'][key] = orders[key];
 								render_order(orders[key]);
 							}
-							if (orders[key].id.split("-")[0] == "o") { metrics.bentos += orders[key].item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(orders[key]); }
+							if (orders[key].id.split("-")[0] == "o" && !order.isOrderAhead) { metrics.bentos += orders[key].item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(orders[key]); }
 						}
 					}
 					println('Fetched ' + orderCnt + ' orders')
