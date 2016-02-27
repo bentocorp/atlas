@@ -21,6 +21,7 @@ function refresh_status_symbol(order) {
 	}
 }
 
+// TODO - Since orders can now be modified, change parameter order to orderId
 function create_menu(items, order, driver) {
 	var menu = $('<div>').addClass('actions-menu').addClass('gone').append('<span class="menu-group">Actions</span>').mouseleave(function () { $(this).hide(); });
 	menu.attr('id', 'actions-menu_' + order.id);
@@ -30,7 +31,7 @@ function create_menu(items, order, driver) {
 		switch (action) {
 			case 'view-order':
 				el.html('View Order').click(function () {
-					Events.order_view(order);
+					Events.order_view(order.id);
 				});
 				break;
 			case 'text':
@@ -38,16 +39,19 @@ function create_menu(items, order, driver) {
 				break;
 			case 'unassign':
 				el.html('Unassign').click(function () {
-					Events.order_unassign(order);
+					Events.order_unassign(order.id);
 					$('#actions-menu_' + order.id).hide();
 				});
 				break;
 			case 'modify':
-				el.html('Modify').click(function () { });
+				el.html('Modify').click(function () {
+					prepare_modify_form(order.id);
+					$('#actions-menu_' + order.id).hide();
+				});
 				break;
 			case 'delete-order':
 				el.html('Cancel Order').click(function () {
-					Events.order_delete(order);
+					Events.order_delete(order.id);
 					$('#actions-menu_' + order.id).hide();
 				});
 				break;
@@ -62,13 +66,10 @@ function create_menu(items, order, driver) {
 	return menu;
 }
 
-function render_order(order) {
-	if ($('#order_' + order.id).length > 0) {
-		return;
-	}
+function create_order_div(order) {
 	/* Make actions menu */
 	var gearIcon = $('<img>').addClass('gear-icon').attr('src', 'img/gear.png').hide();
-	var menu = create_menu(['view-order', 'text', 'unassign', 'modify', 'delete-order'], order);
+	var menu = create_menu(['view-order', /*'text',*/ 'unassign', 'modify', 'delete-order'], order);
 	var actions = $('<span>').addClass('actions').append(menu).append(gearIcon);
 	gearIcon.click(function () { $(this).hide(); menu.show(); });
 	var o = $('<div>').attr('id', 'order_' + order.id).attr('order-id', order.id).addClass('order')
@@ -78,46 +79,68 @@ function render_order(order) {
 	o.mouseenter(function () {
 		gearIcon.show();
 		var marker = markers['order_' + order.id];
-		//marker.setZIndexOffset(999);
-		marker.setIcon(mkIcon(order, 'large'));
+		if (marker != null) {
+			//marker.setZIndexOffset(999);
+			marker.setIcon(mkIcon(order.id, 'large'));
+		}
 	}).mouseleave(function () {
 		gearIcon.hide();
 		var marker = markers['order_' + order.id];
-		//marker.setZIndexOffset(998);
-		marker.setIcon(mkIcon(order, 'medium'));
+		if (marker != null) {
+			//marker.setZIndexOffset(998);
+			marker.setIcon(mkIcon(order.id, 'medium'));
+		}
 	});
 	var status = order.status.toLowerCase();
 	if ('complete' == status) {
 		menu.children('.action-unassign, .action-modify, .action-delete-order').hide();
-		var c = $('#' + order.driverId + '_orders-complete');
-		if (c.length > 0) {
-			c.append(o);
-		} else {
-			throw order.driverId + '_orders-complete not found for order ' + order.id;
-		}
 		// no drag-and-drop for completed orders
 		$('#driver_' + order.driverId + ' > .driver-header > .folding-symbol').removeClass('transparent');
 	} else if ('unassigned' == status) {
 		menu.children('.action-unassign').hide();
 		// dragging allowed but no repositioning (dropping) necessary for unassigned orders
 		o.attr('draggable', true).attr('ondragstart', 'Events.dragstart(event);').attr('ondragover', 'Events.dragover(event);').css('cursor', 'pointer');
-		$('#0_orders-pending').append(o);
 	} else {
 		o.attr('draggable', true).attr('ondragstart', 'Events.dragstart(event);').css('cursor', 'pointer');
-		var after = $('#' + order.driverId + '_orders-pending').children(':last');
-		if (!after.hasClass('order-dummy')) {
-			throw "Error - can't insert new order in " + order.driverId + '_orders-pending because dummy order was not found';
-		}
-		o.insertBefore(after);
 		$('#driver_' + order.driverId + ' > .driver-header > .folding-symbol').removeClass('transparent');
 		o.attr('ondragover' , 'Events.dragover(event);')
 		 .attr('ondragenter', 'Events.order_dragenter(event, "order");')
 		 .attr('ondragleave', 'Events.order_dragleave(event, "order");')
 		 .attr('ondrop'     , 'Events.order_ondrop(event);');
 	}
+	return o;
+}
+
+function render_order(order) {
+	var o = create_order_div(order);
+	var existing = $('#order_' + order.id);
+	var status = order.status.toLowerCase();
+	if (existing.length > 0) {
+		existing.replaceWith(o);
+	} else if ('complete' == status) {
+		var c = $('#' + order.driverId + '_orders-complete');
+		if (c.length > 0) {
+			c.append(o);
+		} else {
+			throw order.driverId + '_orders-complete not found for order ' + order.id;
+		}
+	} else if ('unassigned' == status) {
+		$('#0_orders-pending').prepend(o);
+	} else {
+		var after = $('#' + order.driverId + '_orders-pending').children(':last');
+		if (!after.hasClass('order-dummy')) {
+			throw "Error - can't insert new order in " + order.driverId + '_orders-pending because dummy order was not found';
+		}
+		o.insertBefore(after);
+		$("#" + order.driverId + "_orders").show();
+		$('#driver_' + order.driverId + ' > .driver-header > .folding-symbol').removeClass('collapsed').addClass('expanded');
+	}
 	refresh_status_symbol(order);
-	// draw order on map
-	addOrderToMap(order);
+	// draw order on map if not complete
+	var driver = g.drivers[order.driverId];
+	if ('complete' != status && ((driver != null && driver.status=='ONLINE') || order.driverId <= 0)) {
+		addOrderToMap(order);
+	}
 }
 
 function render_driver(driver) {
@@ -140,10 +163,29 @@ function render_driver(driver) {
 	  	.append('<span class="status-symbol ' + status + '"></span>')
 	  	.append('<span driver-id="'+driver.id+'" class="driver-name" ondragover="Events.dragover(event);" ondragenter="Events.driver_dragenter(event);" ondragleave="Events.driver_dragleave(event);" ondrop="Events.driver_ondrop(event);">' + driver.name + '</span>')
 	  	.append(actions);
-	driverHeader.mouseenter(function () { gearIcon.toggle(); }).mouseleave(function () { gearIcon.toggle(); });
+	driverHeader.mouseenter(function () { 
+		gearIcon.toggle();
+		var marker = markers['driver_' + driver.id];
+		if (marker != null) {
+			marker.setIcon(L.icon({
+        		iconUrl: 'img/circle-12-yellow.svg',
+            	iconSize: [24, 24],
+        	}));
+		}
+	}).mouseleave(function () {
+		gearIcon.toggle();
+		var marker = markers['driver_' + driver.id];
+		if (marker != null) {
+			marker.setIcon(L.icon({
+        		iconUrl: 'img/circle-12.svg',
+            	iconSize: [18, 18],
+        	}));
+		}
+	});
 	// orders
 	var _mkOrderStatusHeader = function (divId, text) {
-		var hide = $('<span>').addClass('hide').html('Hide').click(function () {
+		var label = (text == 'Complete') ? 'Show' : 'Hide';
+		var hide = $('<span>').addClass('hide').html(label).click(function () {
 			$('#' + divId).toggle();
 			if ($('#' + divId).is(':visible')) {
 				hide.html('Hide');
@@ -157,7 +199,7 @@ function render_driver(driver) {
 		.append(_mkOrderStatusHeader(driver.id + '_orders-pending', 'Pending'))
 		.append('<div id="' + driver.id + '_orders-pending"></div>')
 		.append(_mkOrderStatusHeader(driver.id + '_orders-complete', 'Complete'))
-		.append('<div id="' + driver.id + '_orders-complete"></div>');
+		.append('<div id="' + driver.id + '_orders-complete" style="display: none;"></div>');
 	// Initialize order container with a dummy order (for drag and drop)
 	orders.children('#' + driver.id + '_orders-pending').append(
 	  '<div id="dummy_'+ driver.id + '" class="order order-dummy" priority="-1" ondragover="Events.dragover(event);" ondragenter="Events.order_dragenter(event);" ondragleave="Events.order_dragleave(event);" ondrop="Events.dummy_ondrop(event);"></div>'
@@ -186,9 +228,21 @@ var g = {
 
 var token;
 var clientId;
+var simpleSystemEta=15;
+var metrics = { bentos: 0, addons: 0 };
+var bentoBoxFilter = function (o) { return o.item_type == 'CustomerBentoBox'; };
+var countAddOns = function (order) {
+	// This will return 0 until we support reloading add-ons from the database in Houston
+	return order.item.filter(function (o) { return o.item_type == 'AddonList' }).map(function (o) { return o.items.length; }).reduce(function (a, b) { return a + b; }, 0);
+};
+
+function update_metrics() {
+	$('#bento-count').html('Bentos: ' + metrics.bentos);
+	$('#addon-count').html('Add-ons: ' + metrics.addons)
+}
 
 function clear() {
-	g['drivers'] = { };
+	g.drivers = { };
 	g['orders'] = { };
 	$('#0_orders-pending, #online-drivers, #offline-drivers').html('');
 	map.eachLayer(function (layer) {
@@ -197,20 +251,23 @@ function clear() {
 		}
 	});
 	markers = { };
+	metrics.bentos = 0;
+	metrics.addons = 0;
 }
 
 
 function init() {
+	busy(true);
 	clear();
 	// First, get drivers
-	$.getJSON(HOUSTON_URL + '/api/driver/getAll', { }).done(function (res) {
+	$.getJSON(HOUSTON_URL + '/api/driver/getAll', { token: token }).done(function (res) {
     	if (res.code != 0) {
        		println('Error fetching driver data from houston - ' + res.msg);
        	} else {
        		var drivers = res.ret;
        		println('Retrieved ' + drivers.length + ' drivers');
        		// Then get orders
-       		$.getJSON(HOUSTON_URL + '/api/order/getAll', { }, function (res) {
+       		$.getJSON(HOUSTON_URL + '/api/order/getAll', { token: token }, function (res) {
 				if (res.code != 0) {
 					println('Error fetching orders from houston - ' + res.msg);
 				} else {
@@ -219,7 +276,7 @@ function init() {
        				for (var i = 0; i < drivers.length; i++) {
        					var driver = drivers[i];
        					render_driver(driver);
-       					g['drivers'][driver.id] = driver;
+       					g.drivers[parseInt(driver.id)] = driver;
        					// Track each driver
        					soc.emit('get', '/api/track?clientId=d-' + driver.id + '&token=' + token, function (str) {
        						var res = JSON.parse(str);
@@ -243,6 +300,7 @@ function init() {
        							}
        							render_order(order);
 								delete orders[order.id];
+								if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
        						}
        					}
        				}
@@ -257,11 +315,14 @@ function init() {
 								g['orders'][key] = orders[key];
 								render_order(orders[key]);
 							}
+							if (orders[key].id.split("-")[0] == "o") { metrics.bentos += orders[key].item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(orders[key]); }
 						}
 					}
 					println('Fetched ' + orderCnt + ' orders')
 					// UTC timestamp
 					readyTs = new Date().getTime();
+					update_metrics();
+					busy(false);
 				}
 			});
        	}
@@ -301,7 +362,7 @@ function connect() {
     soc.on('connect', function () {
     	println('Connection established');
         println('Authenticating');
-        soc.emit('get', '/api/authenticate?username='+username+'&password='+password+'&type=admin', function (data) {
+        soc.emit('get', '/api/authenticate?username=' + encodeURIComponent(username) + '&password=' + encodeURIComponent(password) + '&type=admin', function (data) {
         	var res = JSON.parse(data);
         	if (res.code != 0) {
         		println('Error authenticating - ' + res.msg);
@@ -319,9 +380,14 @@ function connect() {
 	
     soc.on('stat', function (data) {
     	var push = JSON.parse(data);
-    	console.log(push);
-    	var clientId = push.clientId.split("-")[1];
+    	//console.log(push);
+    	var clientId = parseInt(push.clientId.split("-")[1]);
     	var driver = $('#driver_' + clientId);
+    	if (g.drivers[clientId] == null) {
+    		// This can happen if we receive push notifications before we finish processing data from Houston
+    		console.log('Error - g.drivers[' + clientId + '] == null');
+    		return;
+    	}
     	if (push.status == 'connected') {
     		g.drivers[clientId].status='ONLINE';
     		$('#online-drivers').append(driver);
@@ -352,15 +418,22 @@ function connect() {
         var msg = "Location update for client " + clientId + ": (" + e.lat + ", " + e.lng + ")";
         //println(msg);
         var p = [e.lat, e.lng];
-        console.log(p);
+        console.log(g.drivers[clientId].name + " @ " + p);
         if (markers['driver_' + clientId] == null) {
           console.log('Adding to map');
           markers['driver_'+clientId] = L.marker(p, {
             icon: L.icon({
-            	iconUrl: 'img/car.svg',
-            	iconSize: [32, 32],
+               iconUrl: 'img/circle-12.svg',
+               iconSize: [18, 18],
             })
-          }).bindLabel('marc');
+          }).bindLabel(g.drivers[clientId].name);
+          var m = markers['driver_' + clientId];
+          m.on('mouseover', function () {
+        	drawRoute(clientId);
+          });
+          m.on('mouseout', function () {
+          	hideRoute(clientId);
+          });
           markers['driver_' + clientId].setZIndexOffset(999);
           markers['driver_' + clientId].addTo(map);
         } else {
@@ -369,17 +442,39 @@ function connect() {
       });
 
     soc.on('push', function (data) {
-        var push = JSON.parse(data);console.log(push);
+        var push = JSON.parse(data);
         var subject = push.subject.toLowerCase();
+        
+        var i = rids.indexOf(push.rid); // rids from events.js
+        if (push.subject != 'sse_update') {
+        	console.log(push);
+        	console.log('push.rid=' + push.rid + ', i=' + i); console.log(rids);
+        }
+        if (i >= 0) {
+        	rids.splice(i, 1);
+        	if (rids.length <= 0) {
+        		//busy(false); Make sure not to conflict with init()
+        	}
+        }
+        // Ignore out-dated push notifications
+        /*
+        if (push.timestamp < readyTs) {
+        	// because each server may have a slightly different view of time, this will not always be accurate
+        	// and so it is also important that order functions such as assignment are also idempotent
+        	// Note some servers may be ahead as 2 minutes
+        	console.log('Out-dated push for readyTs=' + readyTs);
+        	console.log(push);
+        	return;
+        }
+        */
         switch (subject) {
+        	case 'sse_update':
+        		var sse = push.body;
+        		console.log('SSE=' + sse);
+        		$('#sse').html('SSE: ' + sse + 'm');
+        		simpleSystemEta = sse;
+        		break;
         	case 'order_action':
-        	/* !!!
-        		if (push.timestamp < readyTs) {
-        			console.log('Out-dated push for readyTs=' + readyTs);
-        			console.log(push);
-        			return;
-        		}
-        		*/
         		var action = push.body;console.log(action);
         		var type = action.type.toLowerCase();
         		var order = action.order;
@@ -397,28 +492,64 @@ function connect() {
         			}
         			render_order(order);
         			g.orders[order.id] = order;
+        			if (order.id.split("-")[0] == "o") { metrics.bentos += order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
+        			update_metrics();
         		} else if (type == 'assign') {
         			Order.move(order.id, action.driverId, action.after);
+        			if (order.driverId != null && order.driverId > 0) {
+        			    g.orders[order.id] = order;
+        				if (i >= 0) {
+        					Events.order_view(order.id);
+        				}
+        			}
+        			console.log(">>"+g.orders[order.id].status);
+        			refresh_status_symbol(order);
+        			recolor(order);
         		} else if (type == 'delete') {
         			Order.delete(order.id);
+        			if (order.id.split("-")[0] == "o") { metrics.bentos -= order.item.filter(bentoBoxFilter).length; metrics.addons += countAddOns(order); }
+        			update_metrics();
+        		} else if (type == 'modify' && i < 0) {
+        			Events.updateOrder(order.id, order);
+        			println('Order ' + order.id + ' updated');
+                    fade($('#order_' + order.id), 500, [255, 255, 153, 1.0]);
         		}
         		break;
         	case 'order_status':
         		var body = push.body;
         		console.log(body.orderId + ', ' + body.status);
         		var order = g.orders[body.orderId];
+        		if (order == undefined) {
+        			console.log(g.orders);
+        		}
         		order.status = body.status;
         		refresh_status_symbol(order);
+        		if (order.status.toLowerCase() == 'complete') {
+        			// If complete, remove order marker from map and remove order from driver's queue
+        			var orderMarker = markers['order_' + order.id];
+        			if (orderMarker != null) {
+        				map.removeLayer(orderMarker);
+        			}
+        			delete markers['order_' + order.id];
+        			var driver = g.drivers[order.driverId];
+        			var orderQueue = driver.orderQueue;
+        			var j = orderQueue.indexOf(order.id);
+        			if (j < 0) {
+        				var msg = "Error - order " + order.id + " marked as complete for driver " + order.driverId + " but not found in queue";
+        				println(msg);
+        				console.log(msg); console.log(order); console.log(driver);
+        			} else {
+        				orderQueue.splice(j, 1);
+        			}
+        			$('#order_' + order.id + '> .actions > .actions-menu > .action-unassign').hide();
+        			$('#order_' + order.id + '> .actions > .actions-menu > .action-delete-order').hide();
+        			$('#order_' + order.id + '> .actions > .actions-menu > .action-modify').hide();
+        		} else {
+        			recolor(order);
+        		}
         		break;
         	default:
         		println('Unsupported subject ' + subject);
-        }
-        var i = rids.indexOf(push.rid); // rids from events.js
-        if (i >= 0) {
-        	rids.splice(i, 1);
-        	if (rids.length <= 0) {
-        		busy(false);
-        	}
         }
     });
 

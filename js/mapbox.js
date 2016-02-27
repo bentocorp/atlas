@@ -6,7 +6,7 @@ var markers = { };
 // Make sure same with atlas.css
 function get_order_color(status) {
 	switch (status.toLowerCase()) {
-        case 'pending':
+        case 'pending'   : return '#8467d7';
         case 'unassigned': return '#bbbbbb';
         case 'modified'  : return '#fffb67';
 		case 'accepted'  : return '#0066cc'; // blue
@@ -29,18 +29,19 @@ function highlight(order) {
 }
 
 function recolor(order) {
-	var id = order.attr('id')
-	var o = orders[id.split('_')[1]];
-	markers[id].setIcon(
+	var o = order;
+    var marker = markers['order_' + o.id];
+    if (marker == null) {
+        console.log('Error - Trying to recolor non-existent marker for order ' + o.id);
+        return;
+    }
+	marker.setIcon(
 		L.mapbox.marker.icon({
-        	'marker-symbol': 'circle',
+        	'marker-symbol': o.id.split('-')[0],
             'marker-size': 'medium',
             'marker-color': get_order_color(o.status),
         })
 	);
-    if (o.status == 'accepted' || o.status == 'rejected' || o.status == 'complete') {
-        order.css('font-weight', 'bold').css('color', get_order_color(o.status));
-    }
 }
 
 function toLatLng(order, callback) {
@@ -64,7 +65,8 @@ function toLatLng(order, callback) {
     });
 }
 
-function mkIcon(order, size) {
+function mkIcon(orderId, size) {
+    var order = g.orders[orderId];
     return L.mapbox.marker.icon({
             'marker-symbol': order.id.split("-")[0],
             'marker-size': size,
@@ -105,4 +107,27 @@ function addOrderToMap(order) {
         markers['order_' + order.id] = marker;
         marker.addTo(map);              
     });
+}
+
+var routes = { };
+function hideRoute(driverId) {
+    var layer = routes[driverId];
+    if (layer != null) {
+        map.removeLayer(layer);
+        delete routes[driverId];
+    }
+}
+function drawRoute(driverId) {
+    var driver = g.drivers[driverId];
+    var line = [];
+    line.push(markers['driver_' + driverId].getLatLng());
+    var q = driver.orderQueue;
+    for (var i = 0; i < q.length; i++) {
+        //var order = g.orders[q[i]];
+        line.push(markers['order_' + q[i]].getLatLng());
+    }
+    var route = L.polyline(line, { color: '#000' });
+    //console.log(route);
+    var pane = route.addTo(map);
+    routes[driverId] = route;
 }

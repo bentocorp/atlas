@@ -1,4 +1,4 @@
 // Environment-specific configurations symlink'ed by Capistrano to js/config.js
 // during deployment
-var NODE_URL = 'node.bentonow.com';
-var HOUSTON_URL = 'houston.bentonow.com';
+var NODE_URL = 'https://node.bentonow.com:8443';
+var HOUSTON_URL = 'https://houston.bentonow.com:8443';

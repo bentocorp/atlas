@@ -12,6 +12,7 @@
         <script src="js/order.js"></script>
         <script src="js/events.js"></script>
         <script src="js/mapbox.js"></script>
+        <script src="js/animations.js"></script>
         <link href="https://api.mapbox.com/mapbox.js/v2.2.1/mapbox.css" rel="stylesheet"/>
         <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-label/v0.2.1/leaflet.label.css" rel='stylesheet'/>
         <link href="css/atlas.css" rel="stylesheet"/>
@@ -28,7 +29,6 @@
             </td></tr>
         </table>
 
-
         <table id="show-order" style="position: absolute; width: 100%; height: 100%; font: 7pt Arial; background-color: rgba(0,0,0,0); z-index: 9998; display: none;">
             <tr><td valign="middle" align="center">
                 <div id="show-order-pop-up" style="position: relative;">
@@ -37,10 +37,11 @@
                         <span style="float: right; font: 11pt Arial; color: white; margin-top: 2px; margin-right: 3px; cursor: default;" onclick="$('#show-order').hide();">&#x2715;</span>
                     </div>
                     <div id="show-order-body" style="padding: 6px;">
-                        
-                        <textarea disabled id="show-order-textarea" style="height: 350px; font-family: Courier New, Courier, monospace"></textarea>
-                        ETA<br/>
-                        <input id="order-eta" type="text"/> MIN. <input id="send-order-eta" type="submit" value="Send"/>
+                        <span></span>
+                        <textarea disabled id="show-order-textarea" style="height: 200px; font-family: .HelveticaNeueDeskInterface-Regular; border: 1px solid #558e1c; padding: 5px; overflow-y: scoll;"></textarea>
+                        <div style="margin-top: 7px;">SMS</div>
+                        <textarea id="sms-textarea" style="height: 75px; font-family: .HelveticaNeueDeskInterface-Regular; border: 1px solid #558e1c; padding: 5px; overflow-y: scoll;"></textarea>                        
+                        <div style="text-align: right; margin-top: 7px;"><input id="send-sms" style="position: static; margin: 0px;" type="submit" value="Send"/></div>
                         <div id="show-order-feedback"></div>
                     </div>
                 </div>
@@ -51,17 +52,19 @@
             <tr><td valign="middle" align="center">
                 <div id="pop-up" style="position: relative;">
                     <div id="p-header" style="display: table; height: 18px; background-color: #558e1c; border: 0px solid #558e1c; width: 100%; border-top-left-radius: 3px; border-top-right-radius:3px;" onmousedown="move_start($(this), event);" onmouseup="move_stop($(this), event);" onmouseleave="move_stop($(this), event);" onmousemove="move($(this), event);">
-                        <span id="p-title" style="display: table-cell; vertical-align: middle; color: white; font-weight: bold; font: 9pt Arial; padding: 3px;">New Order</span>
+                        <span id="p-title-create" style="display: table-cell; vertical-align: middle; color: white; font-weight: bold; font: 9pt Arial; padding: 3px;">New Order</span>
+                        <span id="p-title-modify" style="display: table-cell; vertical-align: middle; color: white; font-weight: bold; font: 9pt Arial; padding: 3px;">Modify Order</span>
                         <span style="float: right; font: 11pt Arial; color: white; margin-top: 2px; margin-right: 3px; cursor: default;" onclick="$('#foo').hide();">&#x2715;</span>
                     </div>
                     <div id="p-body" style="padding: 6px;">
                         <div id="p-feedback-msg" style="color: #a00000;"></div>
                         <div style="display: table; width: 100%; border-spacing: 0px;">    
-                            <div style="display: table-cell; position: relative;"><input id="p-name" type="text" style="width: 100%;" class="p-textfield"/></div>
+                            <div style="display: table-cell; position: relative;"><input id="p-first-name" type="text" style="width: 100%;" class="p-textfield"/></div>
+                            <div style="display: table-cell; width: 104px;"><input id="p-last-name" type="text" style="width: 100%;" class="p-textfield"/></div>
                             <div style="display: table-cell; width: 80px;"><input id="p-phone" type="text" style="width: 100%;" class="p-textfield"/></div>
                         </div>
                         <div style="display: table; width: 100%; border-spacing: 0px;">
-                            <span style="display: table-cell;">Name</span><span style="display: table-cell; width: 80px">Phone</span>
+                            <span style="display: table-cell;">First name</span><span style="display: table-cell; width: 104px">Last name</span><span style="display: table-cell; width: 80px">Phone</span>
                         </div>
                         <div style="display: table; width: 100%; border-spacing: 0px;">    
                             <div style="display: table-cell; position: relative;">
@@ -70,7 +73,7 @@
                                 </div>
                             </div>
                             <div style="display: table-cell; width: 80px;">
-                                <select id="p-city">
+                                <select disabled id="p-city" class="p-select textfield-disabled">
                                     <option>San Francisco</option>
                                     <option>Los Angeles</option>
                                 </select>
@@ -80,29 +83,34 @@
                             <span style="display: table-cell;">Street</span><span style="display: table-cell; width: 80px">City</span>
                         </div>
                         <div style="width: 100%; display: table; border-spacing: 0px; margin-top: 5px;">
-                            <div style="display: table-cell;"><input id="p-state" disabled class="p-textfield" type="text" value="California"/></div>
-                            <div style="display: table-cell; width: 80px;"><input id="p-zip-code" disabled class="p-textfield" type="text" value=""/></div>
-                            <div style="display: table-cell; width: 80px;"><input id="p-country" disabled class="p-textfield" type="text" value="United States"/></div>
+                            <div style="display: table-cell;"><input id="p-state" disabled class="p-textfield textfield-disabled" type="text" value="California"/></div>
+                            <div style="display: table-cell; width: 80px;"><input id="p-zip-code" disabled class="p-textfield textfield-disabled" type="text" value=""/></div>
+                            <div style="display: table-cell; width: 80px;"><input id="p-country" disabled class="p-textfield textfield-disabled" type="text" value="United States"/></div>
                         </div>
                         <div style="display: table; border-spacing: 0px; width: 100%;">
                             <span style="display: table-cell;">State</span><span style="display: table-cell; width: 80px;">Zip Code</span><span style="display: table-cell; width: 80px;">Country</span>
                         </div>
                         <input id="p-lat" type="hidden"/><input id="p-lng" type="hidden"/>
-                        <textarea id="p-order-body"></textarea>
-                        <div style="display: inline-block; font: 7pt Arial; margin-top: 10px;">
-                            Order Assignments
+                        <textarea id="p-order-body" class="p-textarea"></textarea>
+                        <div id="p-section-notes" style="margin-top: 8px;">
+                            <span style="margin-left: 1px;">Notes for driver</span>
+                            <textarea id="p-notes"></textarea>
+                        </div>
+                        <div id="p-section-drivers" style="display: inline-block; font: 7pt Arial; margin-top: 10px;">
+                            <span style="margin-left: 1px;">Assign order to</span>
                             <select id="p-drivers" multiple>
                                 <!--option>Rose Winslet</option>
                                 <option>Rowan Atkinson</option>
                                 <option>Harry Potter</option-->
                             </select>
                         </div>
-                        <input id="p-submit" type="submit" value="Done" onclick="create_order();"/>
+                        <input id="p-order-id" type="hidden"/>
+                        <input id="p-submit" type="submit" value="Create" onclick="create_order();"/>
+                        <input id="p-submit-modify" type="submit" value="Update" onclick="update_order();" style="display: none;"/>
                     </div>
                 </div>
             </td></tr>
         </table>
-
     
         <div id='dashboard' style="display: table; width: 100%; height: 100%; font: 7pt Arial;">
             
@@ -114,13 +122,23 @@
                             <span class="login-label">Password:</span><input id="password" class="login-field" type="password"/>
                             <input id="login-button" class="login-button" type="submit" value="Log in"/>
                         </div>
-                        <div id="settings" style="display: inline-block; display: none;">
+                        <div id="settings" style="display: none;">
+                            <span id="bento-count" style="margin-right: 15px; font-weight: bold; font-size: 10pt; color: #6eb825; display: inline-block; padding-left: 3px; padding-right: 3px; padding-top: 3px; padding-bottom: 3px; vertical-align: middle; background-color: white; border-radius: 2px;">
+                                Bentos: 0
+                            </span>
+                            <!--span id="addon-count" style="margin-right: 15px; font-weight: bold; font-size: 10pt; color: #6eb825; display: inline-block; padding-left: 3px; padding-right: 3px; padding-top: 3px; padding-bottom: 3px; vertical-align: middle; background-color: white; border-radius: 2px;">
+                                Add-ons: 0
+                            </span-->
+                            <span id="sse" style="margin-right: 15px; font-weight: bold; font-size: 10pt; color: #6eb825; display: inline-block; padding-left: 3px; padding-right: 3px; padding-top: 3px; padding-bottom: 3px; vertical-align: middle; background-color: white; border-radius: 2px;">
+                                SSE: 0m
+                            </span>
                             <span id="login-message" style="display: inline-block; vertical-align: middle; color: white; margin-right: 10px;"></span>
                             <img style="margin-right: 5px; vertical-align: middle;" src="img/add-white.png" onclick="prepare_create_form();"/>
                             <span style="position: relative;">
                                 <div id="admin-settings" style="position: absolute; margin-bottom: 4px; display: none;" class="actions-menu" onmouseleave="$(this).hide();">
                                     <span class="menu-group">Admin Settings</span>
                                     <div class="menu-item" onmouseenter="$(this).addClass('menu-select');" onmouseleave="$(this).removeClass('menu-select');" onclick="logout();">Log out</div>
+                                    <div class="menu-item" onmouseenter="$(this).addClass('menu-select');" onmouseleave="$(this).removeClass('menu-select');" onclick="init();">Refresh</div>
                                     <div class="menu-item" onmouseenter="$(this).addClass('menu-select');" onmouseleave="$(this).removeClass('menu-select');" onclick="Events.resync();">Force Houston resync</div>
                                 </div>
                                 <img style="margin-left: 5px; vertical-align: middle;" src="img/gear-white.png" onclick="$('#admin-settings').toggle();"/>
@@ -225,7 +243,7 @@
         function move(el, e) {
             e.stopPropagation();
             var active = parseInt(el.attr('active'));
-            console.log(active);
+            //console.log(active);
             if (active) {
                 el.css('position', 'relative');
                 var dx = e.clientX - start_x;
@@ -246,8 +264,12 @@
             username = $('#username').val(); password = $('#password').val();
             connect();
         });
-        $('#username').val('atlas');
-        $('#password').val('password');
+        $('#username').val('');
+        $('#password').val('').keypress(function(e) {
+            if (e.which == 13) {
+                $('#login-button').click();
+            }
+        });
         var map = L.mapbox.map('map', 'mapbox.streets');
         // XXX - Not sure why, but Mapbox will return bad results if you include the zip code
         var address = encodeURI('2017 Mission St, San Francisco, California, United States');
@@ -257,13 +279,47 @@
             console.log(res);
             var center = res.features[0].center;
             console.log("Initializing map with center - " + center);
-            map.setView([center[1], center[0]], 16);
+            map.setView([center[1], center[0]], 13);
         });
+
+        function update_order() {
+            var orderId = $('#p-order-id').val();
+            var order = g.orders[orderId];
+            if (order == null) {
+                println('Error - order ' + orderId + ' not found');
+                return;
+            }
+            var rid = genid_rfc4122();
+            rids.push(rid);
+            var params = {
+                orderId: orderId,
+                phone  : $('#p-phone').val(),
+                street : $('#p-street').val(),
+                city   : $('#p-city').val(),
+                state  : $('#p-state').val(),
+                zipCode: $('#p-zip-code').val(),
+                lat    : $('#p-lat').val(),
+                lng    : $('#p-lng').val(),
+                notes  : $('#p-notes').val(),
+                token  : token,
+                rid    : rid,
+            };
+            $.getJSON(HOUSTON_URL + '/api/order/update', params, function (res) {
+                if (res.code != 0) {
+                    $('#p-feedback-msg').html('Error updating order ' + orderId + ' - ' + res.msg);
+                } else {
+                    Events.updateOrder(orderId, res.ret);
+                    $('#foo').hide();
+                    println('Order ' + orderId + ' updated');
+                    fade($('#order_' + orderId), 500, [255, 255, 153, 1.0]);
+                }
+            });
+        }
 
         function create_order() {
             $('#p-feedback-msg').html('');
-            if ($('#p-name').val().length == 0) {
-                $('#p-feedback-msg').html('Error - Order needs a name');
+            if ($('#p-first-name').val().length == 0) {
+                $('#p-feedback-msg').html('Error - Order needs at least a first name');
             } else if ($('#p-street').val().length == 0) {
                 $('#p-feedback-msg').html('Error - Order needs a street address');
             } else if ($('#p-order-body').val().length == 0) {
@@ -273,7 +329,8 @@
             } else {
                 var driverIds = $("#p-drivers").val() || [];
                 var params = {
-                    name   : $('#p-name').val(),
+                    firstName: $('#p-first-name').val(),
+                    lastName : $('#p-last-name').val(),
                     phone  : $('#p-phone').val(),
                     street : $('#p-street').val(),
                     city   : $('#p-city').val(),
@@ -283,11 +340,13 @@
                     lat    : $('#p-lat').val() ,
                     lng    : $('#p-lng').val() ,
                     body   : $('#p-order-body').val(),
+                    notes  : $('#p-notes').val(),
                     token  : token, };
+                // TODO - When "notes" was excluded, why were there no signs of error?
                 if (driverIds.length == 0) {
                     $.getJSON(HOUSTON_URL + '/api/order/create', params, function (res) {
                         if (res.code != 0) {
-                            println('Error - ' + res.msg);
+                            println('Error creating order - ' + res.msg);
                         } else {
                             println("created order");      
                         }
@@ -297,7 +356,7 @@
                         params.driverId = parseInt(driverIds[i]);
                         $.getJSON(HOUSTON_URL + '/api/order/create', params, function (res) {
                             if (res.code != 0) {
-                                println('Error - ' + res.msg);
+                                println('Error creating order - ' + res.msg);
                             } else {   
                                 println("created order");    
                             }
@@ -335,7 +394,7 @@
             }
             var suffix = ', ' + $('#p-state').val() + ', ' + $('#p-country').val(); // , California, United States
             var address = street + ', ' + $('#p-city option:selected').val() + suffix;
-            console.log(address);
+            //console.log(address);
             cnt = street.length;
             $.ajax({
                 url: "https://api.mapbox.com/v4/geocode/mapbox.places/" + encodeURI(address) + ".json?types=address&access_token=" + L.mapbox.accessToken,
@@ -361,14 +420,47 @@
             })(street.length));            
         });
 
-        function prepare_create_form() {
-            $('#p-name').val('');
+        function reset_form() {
+            $('#p-title-create').hide();
+            $('#p-title-modify').hide();
+            $('#p-first-name').val('').prop('disabled', false).removeClass('textfield-disabled');
+            $('#p-last-name').val('').prop('disabled', false).removeClass('textfield-disabled');
+            $('#p-phone').val('');
             $('#p-street').val('');
             $('#p-zip-code').val('');
-            $('#p-order-body').val('');
+            $('#p-order-body').val('').prop('disabled', false).removeClass('textfield-disabled');
+            $('#p-notes').val('');
             $('#p-drivers').html('');
-            $('#p-phone').val('');
-            $('#p-drivers').html('');
+            $('#p-submit').hide();
+            $('#p-submit-modify').hide();
+        }
+
+        function prepare_modify_form(orderId) {
+            var order = g.orders[orderId];
+            if (order == null) {
+                println('Error - Order ' + orderId + ' not found');
+            }
+            reset_form();
+            $('#p-title-modify').show();
+            $('#p-first-name').val(order.firstName).prop('disabled', true).addClass('textfield-disabled');
+            $('#p-last-name').val(order.lastName).prop('disabled', true).addClass('textfield-disabled');
+            $('#p-phone').val(order.phone);
+            $('#p-street').val(order.address.street);
+            $('#p-zip-code').val(order.address.zipCode);
+            $('#p-lat').val(order.address.lat);
+            $('#p-lng').val(order.address.lng);
+            var body = order.id.split("-")[0] == 'g' ? order.item : constructBentoOrderString(order);
+            $('#p-order-body').val(body).prop('disabled', true).addClass('textfield-disabled');
+            $('#p-notes').val(order.notes);
+            $('#p-section-drivers').hide();
+            $('#p-order-id').val(orderId);
+            $('#p-submit-modify').show();
+            $('#foo').show();
+        }
+
+        function prepare_create_form() {
+            reset_form();
+            $('#p-title-create').show();
             for (var key in g.drivers) {
                 if (g.drivers.hasOwnProperty(key)) {  
                     var driver = g.drivers[key];
@@ -377,6 +469,7 @@
                     }
                 }
             }
+            $('#p-submit').show();
             $('#foo').show();
         }
 

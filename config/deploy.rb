@@ -38,7 +38,7 @@ namespace :deploy do
 
   after :finished, :symlink_config do
   	on roles(:all) do |host|
-  		execute "ln -s #{fetch(:deploy_to)}/current/config/shared/#{fetch(:stage)} #{fetch(:deploy_to)}/current/js/config.js"
+  		execute "ln -s #{fetch(:deploy_to)}/current/config/shared/#{fetch(:stage)}.js #{fetch(:deploy_to)}/current/js/config.js"
   	end
   end
 
