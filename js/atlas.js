@@ -543,6 +543,10 @@ function connect() {
         var subject = push.subject.toLowerCase();
         
         var i = rids.indexOf(push.rid); // rids from events.js
+        
+        // Log it
+        console.log(push);
+        
         if (push.subject != 'sse_update') {
         	console.log(push);
         	console.log('push.rid=' + push.rid + ', i=' + i); console.log(rids);
