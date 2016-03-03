@@ -77,7 +77,7 @@ var routific = new (function () {
     pending = true;
 
     var secondsElapsed =  0;
-    var maxWaitTime    = 60; // seconds
+    var maxWaitTime    = 300; // seconds
     
     // Show elapsed time
     var tick = function () {
