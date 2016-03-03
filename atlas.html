@@ -7,15 +7,19 @@
         <script src="https://api.mapbox.com/mapbox.js/v2.2.1/mapbox.js"></script>
         <script src="https://api.mapbox.com/mapbox.js/plugins/leaflet-label/v0.2.1/leaflet.label.js"></script>
         <script src="ext/socket.io-client.js"></script>
+        <script src="ext/jquery-ui-1.11.4/external/jquery/jquery.js"></script>
+        <script src="ext/jquery-ui-1.11.4/jquery-ui.min.js"></script>
         <script src="js/config.js"></script>
         <script src="js/atlas.js"></script>
         <script src="js/order.js"></script>
         <script src="js/events.js"></script>
         <script src="js/mapbox.js"></script>
         <script src="js/animations.js"></script>
+        <script src="js/order-ahead.js"></script>
         <link href="https://api.mapbox.com/mapbox.js/v2.2.1/mapbox.css" rel="stylesheet"/>
         <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-label/v0.2.1/leaflet.label.css" rel='stylesheet'/>
         <link href="css/atlas.css" rel="stylesheet"/>
+        <link href="ext/jquery-ui-1.11.4/jquery-ui.min.css" rel="stylesheet" >
     </head>
     
     <body>
@@ -167,7 +171,24 @@
                     </div>
                     
                     <!-- side-pane -->
-                    <div id="side-pane" style="display: table-cell; width: 250px;">
+                    <div id="side-pane" style="display: table-cell; width: 300px;" class="side-pane">
+                    
+                        <div style="display: table; height: 100%; width: 100%;">
+                            <div style="display: table-row; height: 70px; background-color: #b6dc92;">
+                                <div style="display: table-cell;">
+                                    <div style="margin: 5px; color: #558e1c">
+                                        <span style="font: 7pt Arial; font-weight: bold;">ON DEMAND</span>
+                                        <div id="on-demand-msg"></div>
+                                        <!--div>
+                                            Keyboard Shortcuts:<br/>
+                                            <span style="font-family: Courier New">CTRL+c </span> Toggle console<br/>
+                                            <span style="font-family: Courier New">CTRL+d </span> Toggle On Demand<br/>
+                                            <span style="font-family: Courier New">CTRL+o </span> Toggle Order Ahead
+                                        </div-->
+                                    </div>
+                                </div>  
+                            </div>
+                            <div style="display: table-row">
 
                     <div style="height: 100%; overflow-y: scroll; padding-left: 5px; padding-right: 5px; padding-top: 4px;">
                         New Orders
@@ -176,7 +197,7 @@
                                 <div class="orders">
                                     <div id="0_orders-pending">
                                         <!--
-                                        <div id="order_503" class="order" position="0"><span class="order-status-symbol modified">!</span><span class="order-address">488 Battery St</span><span class="order-name">Eric O'Donnell</span><span class="actions">
+                                        <div id="order_503" class="order" position="0"><span class="order-status-symbol modified">!</span><span class="order-address">488 Battery St</span><span class="order-name">Eric O'Donnell</span><span class="scheduled-window">12:00-13:00</span><span class="actions">
                                             <div class="actions-menu gone">
                                                 <span class="menu-group">Actions</span>
                                                 <div class="menu-item menu-select">Text Eric O'Donnell</div>
@@ -188,7 +209,7 @@
                             </div>
                         </div>
                         <br/>
-                        Connected
+                        Scheduled
                         <div id="online-drivers">
                             <!-- Example
                             <div id="driver_900" class="driver-container">
@@ -211,10 +232,56 @@
                             </div>-->
                         </div>
                         <br/>
-                        Unavailable
+                        Off Duty
                         <div id="offline-drivers"></div>
                     </div>
+                
+                            </div> <!-- display: table-row -->
+                        </div> <!-- display: table -->
+                    
                     </div>
+                    
+                        <!-- order-ahead-side-pane -->
+                        <div id="order-ahead-side-pane" class="side-pane" style="display: table-cell; width: 300px;">
+                            <div style="display: table; height: 100%;width: 100%;">
+                                <div style="display: table-row; height: 70px; background-color: #b6dc92;">
+                                    <div style="display: table-cell;">
+                                        <div style="margin: 5px; color: #558e1c">
+                                            <span style="font: 7pt Arial; font-weight: bold;">ORDER AHEAD</span>
+                                            <div>
+                                                <span style="vertical-align: middle;">Date: </span>
+                                                <input type="text" class="login-field" id="order-ahead-date-picker" style="font: 7pt Arial">
+                                                <select id="order-ahead-shift" style="vertical-align: middle; font: 7pt Arial; border: 2px solid #beb8b2; border-radius: 3px; height: 16px; padding-left: 2px; padding-right: 2px;">
+                                                    <option value="0">Lunch</option>
+                                                    <option value="1">Dinner</option>
+                                                </select>
+                                                <span class="order-ahead-action" onclick="get_OA_orders();">Load</span><!-- newline between span interpreted as white space -->
+                                                <span class="order-ahead-action" onclick="routific.route();">Route</span>
+                                                <span class="order-ahead-action" onclick="routific.assign();">Assign</span>
+                                                <span class="order-ahead-action" onclick="report();">Report</span>
+                                                <div id="routific-info" style="margin-top: 5px; margin-bottom: 5px;"></div>
+                                                <div id="order-ahead-msg"></div>
+                                            </div>
+                                        </div>
+                                    </div>  
+                                </div>
+                                <div style="display: table-row">
+                                    <div style="height: 100%; overflow-y: scroll; padding-left: 5px; padding-right: 5px; padding-top: 4px;">
+                                        Unassigned orders
+                                        <div id="order-ahead-new-orders">
+                                            <div id="order-ahead-driver_0" class="driver-container">
+                                                <div class="orders">
+                                                    <div id="order-ahead-0_orders-pending"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <br/>
+                                        Scheduled
+                                        <div id="order-ahead-scheduled"></div>                          
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
             
                 </div> <!-- table -->
             </div> <!-- center row -->
@@ -228,6 +295,34 @@
     </div>
 
     <script type="text/javascript">
+        function reportError(msg) {
+            $.getJSON(HOUSTON_URL + '/admin/reportAtlasException', { token: token, html: msg }).done(function (res) {
+                if (res.code != 0) {
+                    println('Error - init() - ' + res.ret);
+                }
+            }).fail(function( jqxhr, textStatus, error ) {
+                println(error);
+            });
+            alert(msg);
+        }
+window.onerror = function (errorMsg, url, lineNumber) {
+    reportError('Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber);
+}
+        $('#console').hide(); $('#side-pane').hide(); $('#order-ahead-side-pane').hide();
+        // Keyboard shortcuts
+        $(document).keypress(function(e) {
+            if (e.ctrlKey) {
+                // ctrl+c
+                if      (e.which ==  3) { $('#console').toggle(); }
+                // ctrl+d
+                else if (e.which ==  4) { $('#side-pane').toggle(); }
+                // ctrl+o
+                else if (e.which == 15) { $('#order-ahead-side-pane').toggle(); }
+            }
+        });
+
+        $('#order-ahead-date-picker').datepicker();
+
         var start_x = 0,
             start_y = 0;
         function move_start(el, e) {
@@ -423,6 +518,7 @@
         function reset_form() {
             $('#p-title-create').hide();
             $('#p-title-modify').hide();
+            $('#p-feedback-msg').html('');
             $('#p-first-name').val('').prop('disabled', false).removeClass('textfield-disabled');
             $('#p-last-name').val('').prop('disabled', false).removeClass('textfield-disabled');
             $('#p-phone').val('');

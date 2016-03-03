@@ -46,7 +46,11 @@ var Order = new (function () {
 				cq.splice(cp, 1);
 			}
 			// remove?
-			$('#0_orders-pending').append(o);
+			if (!order.isOrderAhead) {
+				$('#0_orders-pending').append(o);
+			} else {
+				$('#order-ahead-0_orders-pending').append(o);
+			}
 			o.attr('ondragover', '').attr('ondragenter', '').attr('ondragleave', '').attr('ondrop', '');
 			// XXXX <<<<<<< place this logic in the push notification handler!
 			order.status="UNASSIGNED";

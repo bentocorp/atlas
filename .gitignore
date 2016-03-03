@@ -1,4 +1,6 @@
 
-
 js/config.js
+/nbproject/private/
+/config/myconfig.rb
+/.capistrano
 
