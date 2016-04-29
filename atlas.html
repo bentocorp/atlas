@@ -307,7 +307,7 @@
         }
 window.onerror = function (errorMsg, url, lineNumber) {
     reportError('Error: ' + errorMsg + ' Script: ' + url + ' Line: ' + lineNumber);
-}
+}        
         $('#console').hide(); $('#side-pane').hide(); $('#order-ahead-side-pane').hide();
         // Keyboard shortcuts
         $(document).keypress(function(e) {
@@ -396,10 +396,11 @@ window.onerror = function (errorMsg, url, lineNumber) {
                 lat    : $('#p-lat').val(),
                 lng    : $('#p-lng').val(),
                 notes  : $('#p-notes').val(),
+                blob   : $('#p-order-body').val(),
                 token  : token,
                 rid    : rid,
             };
-            $.getJSON(HOUSTON_URL + '/api/order/update', params, function (res) {
+            $.post(HOUSTON_URL + '/api/order/update', params, function (res) {
                 if (res.code != 0) {
                     $('#p-feedback-msg').html('Error updating order ' + orderId + ' - ' + res.msg);
                 } else {
@@ -408,7 +409,7 @@ window.onerror = function (errorMsg, url, lineNumber) {
                     println('Order ' + orderId + ' updated');
                     fade($('#order_' + orderId), 500, [255, 255, 153, 1.0]);
                 }
-            });
+            }, 'json');
         }
 
         function create_order() {
@@ -545,8 +546,8 @@ window.onerror = function (errorMsg, url, lineNumber) {
             $('#p-zip-code').val(order.address.zipCode);
             $('#p-lat').val(order.address.lat);
             $('#p-lng').val(order.address.lng);
-            var body = order.id.split("-")[0] == 'g' ? order.item : constructBentoOrderString(order);
-            $('#p-order-body').val(body).prop('disabled', true).addClass('textfield-disabled');
+            var body = order.id.split("-")[0] == 'g' ? order.orderString : constructBentoOrderString(order);
+            $('#p-order-body').val(body).prop('disabled', false).removeClass('textfield-disabled');
             $('#p-notes').val(order.notes);
             $('#p-section-drivers').hide();
             $('#p-order-id').val(orderId);

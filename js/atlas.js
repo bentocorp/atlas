@@ -206,7 +206,7 @@ function render_driver(driver) {
 	var driverHeader = $('<div>').addClass('driver-header')
 	  	.append(fold)
 	  	.append('<span class="status-symbol ' + status + '"></span>')
-	  	.append('<span driver-id="'+driver.id+'" class="driver-name" ondragover="Events.dragover(event);" ondragenter="Events.driver_dragenter(event);" ondragleave="Events.driver_dragleave(event);" ondrop="Events.driver_ondrop(event);">' + driver.name + '</span>')
+	  	.append('<span driver-id="'+driver.id+'" class="driver-name" draggable="true" ondragstart="Events.driver_ondragstart(event);" ondragover="Events.dragover(event);" ondragenter="Events.driver_dragenter(event);" ondragleave="Events.driver_dragleave(event);" ondrop="Events.driver_ondrop(event);">' + driver.name + '</span>')
 	  	.append(actions);
 	driverHeader.mouseenter(function () { 
 		gearIcon.show();

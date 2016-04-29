@@ -1,3 +1,15 @@
+function swap(driver1, driver2) {
+  $.getJSON(HOUSTON_URL + '/api/driver/swap', { token: token, driverId1: driver1, driverId2: driver2 }).done(function (res) {
+    init();
+    if(res.code != 0) {
+      println('Error - ' + res.msg);
+      console.log('Error - ' + res.msg);
+    }
+  }).error(function( jqxhr, textStatus, error ) {
+    console.log('ajax error - ' + error);
+  });
+}
+
 function set_routific_info(job) {
   console.log(job);
   $('#order-ahead-date-picker').val(job.date);
@@ -184,7 +196,7 @@ function get_OA_orders() {
 
           // Finally, render the new orders
           var orders = res.ret;
-       		$('#order-ahead-msg').html('Got ' + orders.length + ' unassigned orders').attr('class', '');
+       		$('#order-ahead-msg').html('Got ' + orders.length + ' orders (Note: Some may already be assigned)').attr('class', '');
           console.log(orders);
           for (var i = 0; i < orders.length; i++) {
             var order = orders[i];

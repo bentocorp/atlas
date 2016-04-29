@@ -31,6 +31,11 @@ var Events = new (function () {
 		e.preventDefault();
 		return false;
 	};
+	this.driver_ondragstart = function (e) {
+		var driverId = $(e.target).attr('driver-id');
+		e.dataTransfer.setData('type', 'driver');
+		e.dataTransfer.setData('driver-id', driverId);
+	};
 	this.driver_dragenter = function (e) { e.preventDefault();
 		$(e.target).parent().addClass('driver-header-drag-enter');
 	}
@@ -66,6 +71,12 @@ var Events = new (function () {
 	};
 
 	this.driver_ondrop = function (e) {
+		var type = e.dataTransfer.getData('type');
+		if (type == 'driver') {
+			var dragDriverId = e.dataTransfer.getData('driver-id');
+			var dropDriverId = $(e.target).attr('driver-id');
+			swap(dragDriverId, dropDriverId);
+		} else {
 		var orderId = e.dataTransfer.getData('order-id');
 	var driverId = $(e.target).attr('driver-id');
 	$('body').addClass('cursor-wait');
@@ -80,6 +91,7 @@ var Events = new (function () {
 			//Order.move(orderId, driverId, null);			
 		}
 	});
+	}
 	var header = $(e.target).parent();
 	header.removeClass('driver-header-drag-enter');
 	_cnt = null;
@@ -172,7 +184,7 @@ var Events = new (function () {
 			address.region + " " + address.zipCode + "\n" + address.country;
 		switch (order['@class']) {
 			case 'String':
-				info = info + "\n\n" + order.item;
+				info = info + "\n\n" + order.orderString;
 				break;
 		    case 'Bento':
 		    	info += "\n\n" + constructBentoOrderString(order);
